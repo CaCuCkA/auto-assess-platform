@@ -163,52 +163,6 @@ body {
     text-decoration: underline;
 }
 
-.input-field select {
-    height: 50px;
-    width: 100%;
-    padding: 10px 15px;
-    font-size: 16px;
-    color: #333;
-    border: 2px solid #aaaaaa;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.3s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='%2300308F'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-}
-
-.input-field select option {
-    background: #f8f8f8;
-    color: #333;
-    font-size: 16px;
-    padding: 10px;
-}
-
-.input-field select option:checked {
-    background: #00308F;
-    color: white;
-}
-
-.input-field select:focus {
-    border-color: #00308F;
-    box-shadow: 0 2px 5px rgba(0, 48, 143, 0.3);
-}
-
-.input-field select:hover {
-    border-color: #0053A0;
-}
-
-.input-field select option:hover {
-    background: #0053A0;
-    color: white;
-}
-
 .option-field {
     margin-top: 20px;
     display: flex;

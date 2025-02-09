@@ -64,15 +64,6 @@
                 </div>
                 <p class="error-message" id="password-error-message"></p>
 
-                <div class="input-field">
-                    <select id="role" name="role" required>
-                        <option value="" disabled selected>Select your role</option>
-                        {{#each roles}}
-                            <option value="{{this.value}}">{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                </div>
-
                 <button type="submit" class="button" id="submit-btn">Sign Up</button>
             </form>
         </div>
