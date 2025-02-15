@@ -13,7 +13,7 @@
         <h2 class="form-title">Sign Up</h2>
 
         <div class="form signup-form">
-            <form action="/signup" method="POST" id="sending-form">
+            <form action="/auth/signup-form" method="POST" id="sending-form">
 
                 <div class="input-field">
                     <i class="uil uil-user user-icon"></i>
@@ -62,7 +62,11 @@
                         required 
                     />
                 </div>
-                <p class="error-message" id="password-error-message"></p>
+                {{#if error}}
+                    <div class="error-message", id="password-error-message">
+                        <p>{{error}}</p>
+                    </div>
+                {{/if}}
 
                 <button type="submit" class="button" id="submit-btn">Sign Up</button>
             </form>

@@ -1,44 +1,56 @@
-const bcrypt = require("bcryptjs");
-const User = require("../models/User");
+const User = require("../models/User.js")
 
 exports.signup = async (req, res) => {
+    const { fullName, email, password } = req.body;
+    console.log(fullName, email, password);
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     try {
-        const { fullName, email, password, role } = req.body;
-
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findByEmail(email);
         if (existingUser) {
-            return res.status(400).send("Email is already in use! Try logging in.");
+            return res.render("auth/signup", { error: "Email is already in use! Try logging in." });
         }
+        const user = await User.create({ fullName, email, password });
+        
+        req.session.userId = user.admin_id;
+        console.log("User logged in:", req.session.userId);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new User({ fullName, email, password: hashedPassword, role });
-        await newUser.save();
-
-        res.render("home");
+        res.redirect("/");
     } catch (error) {
-        console.error("Signup Error:", error);
+        console.error("Signup Error:", error.message);
         res.status(500).send("Internal Server Error");
     }
 };
 
 exports.login = async (req, res) => {
+    const { email, password } = req.body;
+    console.log("HELLO!");
     try {
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).send("User not found!");
+        const user = await User.findByEmail(email);
+        if (!user) {    
+            return res.render("auth/login", { error: "Incorrect login or password" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await User.comparePassword(password, user.hashed_password);
         if (!isMatch) {
-            return res.status(400).send("Wrong password!");
+            return res.render("auth/login", { error: "Incorrect login or password" });
         }
 
-        res.render("home"); 
+        req.session.userId = user.admin_id;
+        console.log("User logged in:", req.session.userId);
+
+        res.redirect("/"); 
     } catch (error) {
-        console.error("Login Error:", error);
+        console.error("Login Error:", error.message);
         res.status(500).send("Internal Server Error");
     }
+};
+
+
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send("Error logging out");
+        }
+        res.redirect("login");
+    });
 };

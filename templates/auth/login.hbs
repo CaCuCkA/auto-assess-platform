@@ -12,7 +12,7 @@
         <h2 class="form-title">Log In</h2>
         <div class="form login-form">
 
-            <form action="/login" method="post"> 
+            <form action="/auth/login-form" method="post"> 
                 <div class="input-field">
                     <input 
                         type="email" 
@@ -36,19 +36,25 @@
                     <i class="uil uil-eye-slash password-toggle-icon"></i>
                 </div>
 
+                {{#if error}}
+                    <div class="error-message">
+                        <p>{{error}}</p>
+                    </div>
+                {{/if}}
+
                 <div class="option-field">
                     <label class="checkbox">
                         <input type="checkbox" id="check" name="rememberMe" />
                         <span>Remember me</span>
                     </label>
-                    <a href="/forgot-password" class="forgot-pw">Forgot password?</a>
+                    <a href="/auth/forgot-passwords" class="forgot-pw">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="button">Login Now</button>
 
                 <div class="login-signup">
                     Don't have an account? 
-                    <a href="/signup" id="signup">Sign Up</a>
+                    <a href="/auth/signup" id="signup">Sign Up</a>
                 </div>
                 
             </form>

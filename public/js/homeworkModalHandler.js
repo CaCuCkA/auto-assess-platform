@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const MAX_TITLE_LENGTH = 255;
     const modal = document.getElementById('create-card-window-modal');
     const errorMessage = document.getElementById('error-message');
     const warningMessage = document.getElementById('warning-message');
@@ -50,6 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (groupName.length > MAX_TITLE_LENGTH) {
+            errorMessage.textContent = `The group name is too long. Please keep it under ${MAX_TITLE_LENGTH} characters.`;
+            return;
+        }        
+
         const url = currentGroupId ? `/edit-homework/${currentGroupId}` : '/add-homework'; 
         const method = currentGroupId ? 'PUT' : 'POST';
 
@@ -57,9 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: groupName, link: `/homework/${groupName}` })
+                body: JSON.stringify({ title: groupName })
             });
-
+            console.log(response);
             const { success, error } = await response.json();
             if (success) {
                 clearMessages();
@@ -75,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const isGroupNameTaken = async (groupName) => {
-        const response = await fetch(`/check-group-name/${groupName}`);
+        const response = await fetch(`/check-homework-name/${groupName}`);
         const { exists } = await response.json();
         return exists;
     };
@@ -140,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         cancelDeleteBtn.addEventListener('click', () => {
-            console.log("[handleDeleteClick] User cancelled delete");
             deleteModal.style.display = 'none';
         });
     };
