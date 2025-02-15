@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+const { Pool } = require("pg");
 
-mongoose.connect("mongodb://localhost:27017/your_database_name")
-.then(() => {
-    console.log("MongoDB connected successfully");
-})
-.catch((error) => {
-    console.error("MongoDB connection failed:", error);
+const pool = new Pool({
+    user: process.env.USER,
+    host: process.env.HOST,
+    database: process.env.DATABASE,
+    password: process.env.PASSWORD,
+    port: process.env.PORT,
 });
 
-module.exports = mongoose;
+module.exports = pool;
