@@ -22,7 +22,7 @@
                 <ul class="nav-links">
                     <li><a href="/" class="nav-link"><i class="uil uil-estate"></i> Home</a></li>
                     <li><a href="/profile" class="nav-link"><i class="uil uil-user-circle"></i> Profile</a></li>
-                    <li><a href="/logout" class="nav-link"><i class="uil uil-signout"></i> Logout</a></li>
+                    <li><a href="/auth/logout" class="nav-link"><i class="uil uil-signout"></i> Logout</a></li>
                 </ul>
             </nav>
         </header>
@@ -33,10 +33,10 @@
                 <h1 class="page-title">Homework groups</h1>
             </div> 
             <div class="card-group-container">
-                {{#each homeworkData}}
-                    <div class="homework-card-container", data-id="{{this.id}}">
-                        <a href="{{this.link}}" class="homework-card-link">
-                            <div class="homework-card-header" style="background-color: {{this.backgroundColor}}">
+                {{#each homeworkWithUrls}}
+                    <div class="homework-card-container", data-id="{{this.homework_id}}">
+                        <a href="{{this.url}}" class="homework-card-link">
+                            <div class="homework-card-header" style="background-color: {{this.card_color}}">
                                 <i class="uil uil-ellipsis-v homework-card-edit-icon"></i>
                             </div>
                             <div class="homework-card-footer">

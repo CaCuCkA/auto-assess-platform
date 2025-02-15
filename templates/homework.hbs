@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - Homework Details</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="homework-details-container">
+        <header class="homework-header">
+            <h1>{{title}}</h1>
+            <p class="homework-id">Homework ID: {{id}}</p>
+        </header>
+
+        <div class="homework-content">
+            <h3>Description:</h3>
+            <p>{{description}}</p>
+
+            <h3>Due Date:</h3>
+            <p>{{due_date}}</p>
+        </div>
+
+        <footer class="homework-footer">
+            <a href="/homework/{{id}}" class="back-to-homework">Back to Homework</a>
+            <a href="/edit-homework/{{id}}" class="edit-homework">Edit Homework</a>
+            <a href="/delete-homework/{{id}}" class="delete-homework">Delete Homework</a>
+        </footer>
+    </div>
+
+    <script src="/js/homework.js"></script>
+</body>
+</html>
