@@ -3,14 +3,12 @@ const { getRandomCardColor } = require("../util/colorGenerator")
 
 exports.renderHome = async (req, res) => {
     try {
-        console.log(req.session.userId);
         const homeworkData = await Homework.getAllByAdmin(req.session.userId);
         const homeworkWithUrls = homeworkData.map(homework => ({
             ...homework,
             url: `/homework/${homework.homework_id}`
         }));
-        console.log(homeworkWithUrls);
-
+        
         res.render("home", { homeworkWithUrls });
     } catch (error) {
         console.error("Error fetching homework:", error);
@@ -21,7 +19,8 @@ exports.renderHome = async (req, res) => {
 exports.checkHomeworkName = async (req, res) => {
     try {
         const { name } = req.params;
-        const existingHomework = await Homework.findByTitle(name);
+        const adminId = req.session.userId;
+        const existingHomework = await Homework.findByTitle(name, adminId);
         res.json({ exists: !!existingHomework });
     } catch (error) {
         console.error("Error checking homework title:", error);
@@ -33,11 +32,6 @@ exports.addHomework = async (req, res) => {
     try {
         const { title } = req.body;
         const adminId = req.session.userId;
-        const existingHomework = await Homework.findByTitle(title);
-        
-        if (existingHomework) {
-            return res.status(400).json({ success: false, error: "exists" });
-        }
 
         const newHomework = await Homework.create(title, getRandomCardColor(), adminId);
         res.json({ success: true, message: "Homework added successfully", newHomework });

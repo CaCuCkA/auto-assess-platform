@@ -1,15 +1,13 @@
-const User = require("../models/User.js")
+const AdminUser = require("../models/AdminUser.js")
 
 exports.signup = async (req, res) => {
     const { fullName, email, password } = req.body;
-    console.log(fullName, email, password);
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     try {
-        const existingUser = await User.findByEmail(email);
+        const existingUser = await AdminUser.findByEmail(email);
         if (existingUser) {
             return res.render("auth/signup", { error: "Email is already in use! Try logging in." });
         }
-        const user = await User.create({ fullName, email, password });
+        const user = await AdminUser.create({ fullName, email, password });
         
         req.session.userId = user.admin_id;
         console.log("User logged in:", req.session.userId);
@@ -23,14 +21,13 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
-    console.log("HELLO!");
     try {
-        const user = await User.findByEmail(email);
+        const user = await AdminUser.findByEmail(email);
         if (!user) {    
             return res.render("auth/login", { error: "Incorrect login or password" });
         }
 
-        const isMatch = await User.comparePassword(password, user.hashed_password);
+        const isMatch = await AdminUser.comparePassword(password, user.hashed_password);
         if (!isMatch) {
             return res.render("auth/login", { error: "Incorrect login or password" });
         }

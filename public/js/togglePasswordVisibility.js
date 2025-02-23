@@ -1,7 +1,7 @@
-const passwordFields = document.querySelectorAll('.password-input');
-const showPasswordIcon = document.querySelector('.password-toggle-icon');
+const passwordFields = document.querySelectorAll(".password-input");
+const showPasswordIcon = document.querySelector(".password-toggle-icon");
 
-showPasswordIcon.addEventListener('click', function() {
+showPasswordIcon.addEventListener("click", function() {
     passwordFields.forEach(field => {
         const isPasswordVisible = field.getAttribute("type") === "password";
         const newType = isPasswordVisible ? "text" : "password";
