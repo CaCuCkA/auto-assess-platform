@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const pool = require("../config/database");
 
-class User {
+class AdminUser {
     static async findByEmail(email) {
         const query = "SELECT admin_id, email, hashed_password FROM admins WHERE email = $1";
         console.log(query);
@@ -27,4 +27,4 @@ class User {
     }
 }
 
-module.exports = User;
+module.exports = AdminUser;
