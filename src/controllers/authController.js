@@ -10,7 +10,6 @@ exports.signup = async (req, res) => {
         const user = await AdminUser.create({ fullName, email, password });
         
         req.session.userId = user.admin_id;
-        console.log("User logged in:", req.session.userId);
 
         res.redirect("/");
     } catch (error) {
