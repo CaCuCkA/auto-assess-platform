@@ -11,6 +11,8 @@ require('dotenv').config({
 const authRoutes = require("./routes/authRoutes");
 const homeRoutes = require("./routes/homeRoutes");
 const homeworkRoutes = require("./routes/homeworkRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+
 const authMiddleware = require("./util/authMiddleware"); 
 
 const app = express();
@@ -42,6 +44,7 @@ app.use("/auth", authRoutes);
 app.use(authMiddleware); 
 app.use("/", homeRoutes);
 app.use("/homework", homeworkRoutes);
+app.use("/report", reportRoutes);
 
 app.use((req, res) => {
     res.status(404).render("error");
