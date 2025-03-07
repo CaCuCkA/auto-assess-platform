@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
-    <link rel="stylesheet" href="/css/header-footer.css">
     <link rel="stylesheet" href="/css/notification.css">
+    <link rel="stylesheet" href="/css/dropdown-menu.css">
     <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
     <title>Document</title>
 </head>
 <body> 
@@ -44,12 +45,6 @@
                             <div class="homework-card-footer">
                                 <h2 class="homework-card-title">{{this.title}}</h2>
                             </div>
-                            <div class="dropdown-menu">
-                                <ul>
-                                    <li class="edit-option">Edit</li>
-                                    <li class="delete-option">Delete</li>
-                                </ul>
-                            </div>
                         </a>   
                     </div>
                 {{/each}}
@@ -62,19 +57,18 @@
                     </a>
                 </div>
 
-                <div id="create-card-window-modal" class="modal">
+                 <div id="create-card-modal" class="create-card-modal">
                     <div class="modal-content">
                         <span class="close">&times;</span>
-                        <input type="text" id="homework-card-name" class="input-field" placeholder="Homework Group Name" />
-                        <p class="error-message" id="error-message"></p>
-                        <p class="warning-message" id="warning-message"></p>
+                        <input type="text" id="homework-name" class="input-field" placeholder="Report Name" />
+                        <p class="notification-message" id="notification-homework-message"></p>
                         <button class="button" id="submit-btn-homework-modal">Create</button>
                     </div>
                 </div>
 
-                <div id="delete-confirmation-modal" class="modal">
+                <div id="delete-confirmation-modal" class="delete-confirmation-modal">
                     <div class="modal-content">
-                        <p id="delete-message">Are you sure you want to delete this group?</p>
+                        <span class="close" id="close-delete-modal">&times;</span> <p id="delete-message">Are you sure you want to delete this group?</p>
                         <div class="model-footer">
                             <button id="confirm-delete-btn" class="button">Yes</button>
                             <button id="cancel-delete-btn" class="button">No</button>
@@ -82,7 +76,17 @@
                     </div>
                 </div>
 
-                <div id="informational-modal" class="informational-modal">
+                <div class="option-modal-overlay" id="option-modal">
+                    <div class="option-modal-content">
+                        <span class="close" id="option-modal-close">&times;</span>
+                        <ul>
+                            <li id="edit-option">Edit</li>
+                            <li id="delete-option">Delete</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="informational-modal" class="informational-modal error">
                     <div id="informational-modal-content" class="informational-modal-content">
                         <span id="close-informational-modal" class="close-informational-modal">&times;</span>
                         <h2 id="informational-modal-title" class="informational-modal-title"></h2>
@@ -92,7 +96,6 @@
                 </div>
             </div>
         </main>
-
         <footer class="site-footer">
             <p>&copy; 2025 Auto Assess Platform. All rights reserved.</p>
         </footer>
