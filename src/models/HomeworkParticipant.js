@@ -3,7 +3,7 @@ const pool = require("../config/database");
 class HomeworkParticipant {
 
     static async getAllParticipants(homeworkId) {
-        const query = "SELECT * FROM homework_participants WHERE homework_id = $1 ORDER BY created_at DESC";
+        const query = "SELECT * FROM homework_participants WHERE homework_id = $1 ORDER BY last_build_time DESC";
         const { rows } = await pool.query(query, [homeworkId]);
         return rows;
     }
@@ -17,7 +17,7 @@ class HomeworkParticipant {
     static async add(participants, homeworkId) {
         const query = "INSERT INTO homework_participants (repo_url, full_name, ssh_key, homework_id) VALUES " +
             participants.map(({ repoUrl, fullName, sshKey }) => 
-                `("${repoUrl}", "${fullName}", "${sshKey}", ${homeworkId})`
+                `('${repoUrl}', '${fullName}', '${sshKey}', ${homeworkId})`
             ).join(", ") + " RETURNING *";
         
         const { rows } = await pool.query(query);

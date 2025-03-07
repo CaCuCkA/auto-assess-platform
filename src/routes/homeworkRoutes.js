@@ -10,4 +10,6 @@ router.post("/add-participant", homeworkController.addHomeworkParticipant);
 router.post("/edit-participant/:id", homeworkController.editHomeworkParticipant);
 router.delete("/delete-participant/:id", homeworkController.deleteHomeworkParticipant);
 
+router.get("/participant-report/:id", homeworkController.getParticipantReports);
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const Homework = require("../models/Homework");
 const HomeworkParticipant = require("../models/HomeworkParticipant");
+const Report = require("../models/Report")
 
 exports.renderHomeworkPage = async (req, res) => {
     try {
@@ -136,3 +137,17 @@ exports.checkDuplicates = async (req, res) => {
         res.status(500).json({ error: "Internal server error", details: error.message });
     }
 };
+
+
+exports.getParticipantReports = async (req, res) => {
+    const participantId = req.params.id;
+    req.session.participantId = participantId;
+
+    const reportData = await Report.getAllByParticipant(participantId);
+    const reportWithUrls = reportData.map(report => ({
+            ...report,
+            url: `/report/report-editor/${report.report_id}`
+    }));
+
+    res.render('report', { reports: reportWithUrls });
+}
