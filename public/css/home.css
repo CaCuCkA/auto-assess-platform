@@ -132,7 +132,7 @@ html, body {
   padding: 20px;
 }
 
-.homeworks-groups-tittle-contains {
+.homeworks-groups-title-contains {
   width: 100%;
   margin-bottom: 65px;
 }
@@ -154,4 +154,61 @@ html, body {
 
 .site-logo {
   font-size: 3em;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+.unanswered-report-container {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .unanswered-report-title-contains {
+      margin-bottom: 30px;
+  }
+}
+
+.reports {
+  width: 95%;
+  max-width: 1000px;
+  min-height: 50px;
+  border: 1px solid #ddd;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.report-card-container {
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 0;
+  background: none;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s ease;
+}
+
+.reports .report-link:last-child .report-card-container {
+  border-bottom: none;
+}
+
+.report-card-container:hover {
+  background-color: #f9f9f9;
 }
