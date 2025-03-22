@@ -1,8 +1,10 @@
-flask>=3.0,<4.0
+quart>=0.19,<1.0
+
+# Environment variables
 environs~=9.0
 python-dotenv
 
-# PostgreSQL sqlalchemy
+# PostgreSQL + SQLAlchemy async
 SQLAlchemy~=2.0.20
 sqlalchemy-stubs~=0.4
 asyncpg
