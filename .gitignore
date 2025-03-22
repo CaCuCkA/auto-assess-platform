@@ -1,22 +1,52 @@
-/node_modules/
+# === Python Artifacts ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
 
+# Virtual environments
+.env/
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# Python metadata
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# === Node/Frontend Artifacts ===
+node_modules/
 npm-debug.log
 yarn-error.log
 
-.env
-
+# Production build
 /dist
 /build
 
-/data
+# === Environment & Config ===
+.env
+*.env
 
-# Logs
+# === Logs & Runtime ===
 *.log
 
+# === Data & Temporary Files ===
+/data/
+*.sqlite3
+*.db
+
+# === macOS & Windows System Files ===
 .DS_Store
 Thumbs.db
 
+# === IDE & Editor Settings ===
 .vscode/
 .idea/
-
-*.env
