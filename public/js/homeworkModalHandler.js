@@ -163,10 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     
     document.getElementById("close-informational-modal").addEventListener("click", function () {
-        closeModal(informationModal);
+        closeModal(informationModal.modal);
     });
 
     document.getElementById("close-informational-modal-btn").addEventListener("click", function () {
-        closeModal(informationModal);
+        closeModal(informationModal.modal);
     });
 });
