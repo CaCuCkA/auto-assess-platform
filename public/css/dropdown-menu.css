@@ -148,7 +148,7 @@
     gap: 0
 }
 
-.delete-confirmation-modal {
+.confirmation-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -162,20 +162,20 @@
     backdrop-filter: blur(8px);
 }
 
-.delete-confirmation-modal .model-footer {
+.confirmation-modal .model-footer {
     display: flex;
     gap: 30px;
 }
 
 @media (max-width: 600px) {
-    .delete-confirmation-modal,
+    .confirmation-modal,
     .create-card-modal {
         align-items: flex-start;
         padding: 20px;
         box-sizing: border-box;
     }
 
-    .delete-confirmation-modal .modal-content {
+    .confirmation-modal .modal-content {
         width: 100%;
         max-width: none;
         padding: 20px;
@@ -184,7 +184,7 @@
         gap: 15px;
     }
 
-    .delete-confirmation-modal .button {
+    .confirmation-modal .button {
         font-size: 14px;
         height: 40px;
         border-radius: 8px;
