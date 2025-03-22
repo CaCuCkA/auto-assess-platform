@@ -18,15 +18,24 @@ html, body {
     flex-direction: column;
 }
 
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+}
+
 .wrapper {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-.homeworks-groups-tittle-contains {
-width: 100%;
-margin-bottom: 65px;
+.homeworks-groups-title-contains {
+    width: 100%;
+    margin-bottom: 65px;
 }
 
 .page-title {
@@ -202,4 +211,25 @@ margin-bottom: 65px;
 
 #submit-btn-participant-modal {
     margin-top: 20px;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+}
+
+.test-container {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .homeworks-groups-title-contains {
+        margin-bottom: 30px;
+    }
 }
