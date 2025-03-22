@@ -34,6 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
         clearMessages();
         modal.style.display = "none";
     };
+
+    const informationModal = {
+        modal: document.getElementById("informational-modal"),
+        title: document.getElementById("informational-modal-title"),
+        content: document.getElementById("informational-modal-text-content")
+    };
     
     const displayNotification = (type, notTitle, message) => {
         const { modal, title, content } = informationModal;
@@ -54,8 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return exists;
     };
     
-    reports.addEventListener('click', (event) => {
-        if (event.target.classList.contains('report-edit-icon')) {
+    reports.addEventListener("click", (event) => {
+        if (event.target.classList.contains("report-edit-icon")) {
             event.preventDefault();
             event.stopPropagation();
             const cardContainer = event.target.closest(".report-card-container");
@@ -132,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 const html = await response.text();
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
+                const doc = parser.parseFromString(html, "text/html");
                 reports.prepend(doc.body.firstChild);
                 updateReports()
             }
@@ -164,14 +170,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
     
                 if (data.success) {
-                    console.log("[handleDeleteClick] Report was deleted successfully.");
                     const reportElement = document.querySelector(`[report-id="${currentReportId}"]`);
                     if (reportElement) {
                         reportElement.remove();
                     }        
                 } else {
                     console.error("[handleDeleteClick] Error deleting report:", data.error);
-                    displayNotification("error", "Error deleting report!", "There was an issue while attempting to delete the homework. Please try again later.");
+                    displayNotification("error", "Error deleting report!", "There was an issue while attempting to delete the report. Please try again later.");
                 }
             } catch (error) {
                 console.error("[handleDeleteClick] Error during fetch request:", error);
@@ -184,11 +189,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     
     document.getElementById("close-informational-modal").addEventListener("click", function () {
-        closeModal(informationModal);
+        closeModal(informationModal.modal);
     });
     
     document.getElementById("close-informational-modal-btn").addEventListener("click", function () {
-        closeModal(informationModal);
+        closeModal(informationModal.modal);
     });
     
     

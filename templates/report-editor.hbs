@@ -2,22 +2,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report</title>
+    <title>{{title}}</title>
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
     <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="/css/header-footer.css">
     <link rel="stylesheet" href="/css/report-editor.css">
+    <link rel="stylesheet" href="/css/notification.css">
+    <link rel="stylesheet" href="/css/dropdown-menu.css">
     <link rel="stylesheet" href="/css/prism.css">
     
 </head>
 <body>
 
     <header class="site-header">
-      <div class="logo-container">
-          <i class="uil uil-graduation-cap site-logo"></i>
-      </div>
+      <a href="#" id="return-back-icon" class="return-back-icon"><i class="uil uil-arrow-left"></i></a>
       
       <button class="menu-toggle" aria-label="Toggle navigation">
           <i class="uil uil-bars"></i>
@@ -25,19 +25,36 @@
 
       <nav class="navigation">
           <ul class="nav-links">
-              <li><a href="/" class="nav-link"><i class="uil uil-estate"></i> Home</a></li>
-              <li><a href="/save" class="nav-link"><i class="uil uil-save"></i> Save</a></li>
-              <li><a href="/send" class="nav-link"><i class="uil uil-message"></i> Send</a></li>
+                <li><a href="#" class="nav-link" id="save-btn"><i class="uil uil-save"></i> Save</a></li>
+                <li><a href="#" class="nav-link" id="submit-btn"><i class="uil uil-message"></i> Submit</a></li>
           </ul>
       </nav>
   </header> 
 
-    <div class="editor-container">
-      <textarea id="editor" class="editor">{{report-content}}</textarea>
+    <div class="editor-container" report-id="{{id}}", homework-id="{{homework-id}}">
+      <textarea id="editor" class="editor">{{content}}</textarea>
       <div id="preview" class="markdown-body"></div>
+    </div>
+
+    <div id="informational-modal" class="informational-modal error">
+        <div id="informational-modal-content" class="informational-modal-content">
+           <span id="close-informational-modal" class="close-informational-modal">&times;</span>
+            <h2 id="informational-modal-title" class="informational-modal-title"></h2>
+            <p id="informational-modal-text-content" class="informational-modal-text-content"></p>
+            <button id="close-informational-modal-btn" class="close-informational-modal-btn">Close</button>
+        </div>
+    </div>
+    <div id="report-save-confirmation-modal" class="save-confirmation-modal confirmation-modal">
+        <div class="modal-content">
+            <span class="close" id="report-close-save-modal">&times;</span> <p id="save-message">Do you want to save current changes?</p>
+            <div class="model-footer">
+                <button id="report-confirm-save-btn" class="button">Yes</button>
+                <button id="report-cancel-save-btn" class="button">No</button>
+            </div>
+        </div>
     </div>
     <script src="/js/prism.js"></script>
     <script src="/js/mobileMenu.js"></script>
-    <script src="/js/markdownEditor.js"></script>
+    <script src="/js/markdownEditorHandler.js"></script>
 </body>
 </html>

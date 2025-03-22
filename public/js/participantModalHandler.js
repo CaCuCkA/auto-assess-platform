@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (isEdit) {
                     window.location.hash = `#notification=${encodeURIComponent(JSON.stringify({
                         type: "success",
-                        title: "Participant Updated",
+                        title: "Participant updated",
                         message: `The following fields have been successfully updated: ${result.fields.join(", ")}`
                     }))}`;
                 }
