@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
+    <link rel="stylesheet" href="/css/notification.css">
+    <link rel="stylesheet" href="/css/reports-modal.css">
+    <link rel="stylesheet" href="/css/report-status.css">
+    <link rel="stylesheet" href="/css/dropdown-menu.css">
+    <link rel="stylesheet" href="/css/homework.css">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="stylesheet" href="/css/test.css">
+    <title>{{homework.title}}</title>
+</head>
+<body>
+    <div class="wrapper">
+        <header class="site-header">
+            <div class="logo-container">
+                <i class="uil uil-graduation-cap site-logo"></i>
+            </div>
+            
+            <button class="menu-toggle" aria-label="Toggle navigation">
+                <i class="uil uil-bars"></i>
+            </button>
+
+            <nav class="navigation">
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link"><i class="uil uil-estate"></i> Home</a></li>
+                    <li><a href="/profile" class="nav-link"><i class="uil uil-user-circle"></i> Profile</a></li>
+                    <li><a href="/auth/logout" class="nav-link"><i class="uil uil-signout"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </header> 
+        <main class="main-content">
+            <div class="homeworks-groups-title-contains">
+                <h1 class="page-title">Homework participants</h1>
+            </div> 
+            <div class="card-group-container">
+                {{#each participants}}
+                    <div class="participant-card-container" participant-id="{{this.participant_id}}">
+                        <div class="participant-card-header">
+                            <h2 class="participant-card-title">{{this.full_name}}</h2>
+                            <i class="uil uil-ellipsis-v participant-card-option-icon"></i>
+                        </div>
+                        <div class="participant-card-body">
+                            <div class="build-info">
+                                <i class="uil uil-clock build-icon"></i>
+                                <span class="build-time">
+                                    Last Build: {{#if this.last_build_time}}{{this.last_build_time}}{{else}}No builds{{/if}}
+                                </span>
+                            </div>
+                            <div class="build-status">
+                                {{#if this.last_build_time}}
+                                    {{#if this.build_success}}
+                                        <i class="uil uil-check-circle status-icon success"></i>
+                                        <span class="participant-card-build-success success-text">Success</span>
+                                    {{else}}
+                                        <i class="uil uil-times-circle status-icon failed"></i>
+                                        <span class="participant-card-build-failed failed-text">Failed</span>
+                                    {{/if}}
+                                {{else}}
+                                    <i class="uil uil-exclamation-circle status-icon pending"></i>
+                                    <span class="participant-card-build-pending pending-text">No builds</span>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="participant-card-footer">
+                            <button type="button" class="button participant-card-button">Reports</button>
+                        </div>
+                    </div>
+                {{/each}}
+
+                    
+                <div class="participant-card-container add-card">
+                    <a href="javascript:void(0);" class="participant-card-link" id="add-participant-card">
+                        <div class="participant-card-footer add-footer">
+                            <i class="uil uil-plus participant-card-title plus-icon"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <div id="create-participant-card-modal" class="create-card-modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        
+                        <input type="text" id="participant-card-name" class="input-field" placeholder="Full Name" />
+                        <p class="notification-message" id="name-notification-message"></p>
+                        <input type="text" id="participant-card-repo-url" class="input-field" placeholder="Repository URL" />
+                        <p class="notification-message" id="url-notification-message"></p>
+                        <input type="text" id="participant-card-ssh-key" class="input-field" placeholder="SSH Key" />
+                        <p class="notification-message" id="ssh-notification-message"></p>
+                        <div id="file-upload-container" class="file-upload-container">
+                            <span class="placeholder-text">Drag & Drop your CSV file here or click to browse</span>
+                            <input type="file" id="csv-file-upload" accept=".csv" class="csv-input-field"/>
+                        </div>
+                        <p class="notification-message" id="file-notification-message"></p>
+
+                        <button class="button modal-button" id="submit-btn-participant-modal">Create</button>
+                    </div>
+                </div>
+
+
+                <div id="participant-delete-confirmation-modal" class="delete-confirmation-modal confirmation-modal">
+                    <div class="modal-content">
+                        <span class="close" id="participant-close-delete-modal">&times;</span> 
+                        <p id="delete-message">Are you sure you want to delete this participant?</p>
+                        <div class="model-footer">
+                            <button id="participant-confirm-delete-btn" class="button">Yes</button>
+                            <button id="participant-cancel-delete-btn" class="button">No</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-modal-overlay" id="participant-option-modal">
+                    <div class="option-modal-content">
+                        <span class="close" id="participant-option-modal-close">&times;</span>
+                        <ul>
+                            <li id="participant-edit-option">Edit</li>
+                            <li id="participant-delete-option">Delete</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="informational-modal" class="informational-modal error">
+                    <div id="informational-modal-content" class="informational-modal-content">
+                        <span id="close-informational-modal" class="close-informational-modal">&times;</span>
+                        <h2 id="informational-modal-title" class="informational-modal-title"></h2>
+                        <p id="informational-modal-text-content" class="informational-modal-text-content"></p>
+                        <button id="close-informational-modal-btn" class="close-informational-modal-btn">Close</button>
+                    </div>
+                </div>
+
+                <div id="reports-modal" class="reports-modal">
+                    <div class="reports-modal-content">
+                        <span class="close-reports-modal" id="close-reports-modal">&times;</span>
+                        <h2 class="reports-modal-title">Last Reports</h2>
+                        <div id="reports-content" class="reports-list">
+                            <div id="reports" class="reports"></div>
+                        </div>
+                        <div class="reports-modal-footer">
+                            <button class="add-report-button">
+                                <i class="fas fa-plus"></i>  Add New Report
+                            </button>
+                            <div class="reports-count-selector">
+                                <select id="reports-count" class="reports-count">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="100">100</option>
+                                    <option value="all">All</option>
+                                </select>
+                                <i class="fas fa-caret-down"></i>
+                            </div>
+                        </div>
+
+                        <div id="create-report-card-modal" class="create-card-modal">
+                            <div class="modal-content">
+                                <span class="close">&times;</span>
+                                <input type="text" id="report-name" class="input-field" placeholder="Report Name" />
+                                <p class="notification-message" id="report-notification-message"></p>
+                                <button class="button" id="submit-btn-report-modal"></button>
+                            </div>
+                        </div>
+
+                        <div id="report-delete-confirmation-modal" class="delete-confirmation-modal confirmation-modal">
+                            <div class="modal-content">
+                                <span class="close" id="report-close-delete-modal">&times;</span> <p id="delete-message">Are you sure you want to delete this report?</p>
+                                <div class="model-footer">
+                                    <button id="report-confirm-delete-btn" class="button">Yes</button>
+                                    <button id="report-cancel-delete-btn" class="button">No</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="option-modal-overlay" id="report-option-modal">
+                            <div class="option-modal-content">
+                                <span class="close" id="report-option-modal-close">&times;</span>
+                                <ul>
+                                    <li id="report-edit-option">Edit</li>
+                                    <li id="report-delete-option">Delete</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-container">
+                <div class="homeworks-groups-title-contains">
+                    <h1 class="page-title">Homework tests</h1>
+                </div> 
+                <div id="test-file-list" class="test-file-list">
+                    {{#each tests}}
+                        <div class="test-file-item" test-id="{{this.test_id}}">
+                            <span class="test-file-icon"><i class="fas fa-file-code"></i></span>
+                            <span class="test-file-name">{{this.name}}</span>
+                            <span class="test-file-status {{this.status}}" test-file-status="{{this.status}}">{{this.status}}</span>
+                            <span class="test-file-preferences"><i class="fas fa-ellipsis-v"></i></span>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <div id="test-file-drop-area" class="test-file-drop-area">
+                    <p>Drag & Drop Python test files here or <label for="file-input">click to browse</label></p>
+                    <input type="file" id="test-file-input" class="test-file-input" multiple>
+                </div>
+
+                <div id="test-file-modal" class="test-file-modal-container">
+                    <div class="test-file-modal-content">
+                        <span class="test-file-modal-close">&times;</span>
+                        <pre id="test-file-modal-pre" class="test-file-modal-pre">
+                        <code class="language-python test-file-modal-code"></code>
+                        </pre>
+                    </div>
+                </div>
+
+                <div id="edit-test-card-modal" class="create-card-modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <input type="text" id="test-name" class="input-field" placeholder="Test Name" />
+                        <p class="notification-message" id="test-notification-message"></p>
+                            <button class="button" id="submit-btn-test-modal">Edit</button>
+                    </div>
+                </div>
+
+                <div id="test-delete-confirmation-modal" class="delete-confirmation-modal confirmation-modal">
+                    <div class="modal-content">
+                        <span class="close" id="test-close-delete-modal">&times;</span> <p id="delete-message">Are you sure you want to delete this test?</p>
+                        <div class="model-footer">
+                            <button id="test-confirm-delete-btn" class="button">Yes</button>
+                            <button id="test-cancel-delete-btn" class="button">No</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-modal-overlay" id="test-option-modal">
+                    <div class="option-modal-content">
+                        <span class="close" id="test-option-modal-close">&times;</span>
+                        <ul>
+                            <li id="test-edit-option">Edit</li>
+                            <li id="test-delete-option">Delete</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        </main>
+        <footer class="site-footer">
+            <p>&copy; 2025 Auto Assess Platform. All rights reserved.</p>
+        </footer>
+
+        <script src="/js/prism.js"></script>
+        <script src="/js/mobileMenu.js"></script>
+        <script src="/js/testModalHandler.js"></script>
+        <script src="/js/participantModalHandler.js"></script>
+        <script src="/js/reportModalHandler.js"></script>
+    </div>
+</body>
+</html>

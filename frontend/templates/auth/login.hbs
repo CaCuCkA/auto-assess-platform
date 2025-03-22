@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/auth-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>Log In</title>
+</head>
+<body>
+    <div class="form-container">
+        <h2 class="form-title">Log In</h2>
+        <div class="form login-form">
+
+            <form action="/auth/login-form" method="post"> 
+                <div class="input-field">
+                    <input 
+                        type="email" 
+                        name="email" 
+                        placeholder="Enter your email" 
+                        required 
+                        autofocus
+                    />
+                    <i class="uil uil-envelope-alt email-icon"></i>
+                </div>
+
+                <div class="input-field">
+                    <input 
+                        type="password" 
+                        name="password" 
+                        class="password-input" 
+                        placeholder="Enter your password" 
+                        required
+                    />
+                    <i class="uil uil-lock password-icon"></i>
+                    <i class="uil uil-eye-slash password-toggle-icon"></i>
+                </div>
+
+                {{#if error}}
+                    <div class="error-message">
+                        <p>{{error}}</p>
+                    </div>
+                {{/if}}
+
+                <div class="option-field">
+                    <label class="checkbox">
+                        <input type="checkbox" id="check" name="rememberMe" />
+                        <span>Remember me</span>
+                    </label>
+                    <a href="/auth/forgot-passwords" class="forgot-pw">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="button">Login Now</button>
+
+                <div class="login-signup">
+                    Don't have an account? 
+                    <a href="/auth/signup" id="signup">Sign Up</a>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/togglePasswordVisibility.js"></script>
+</body>
+</html>

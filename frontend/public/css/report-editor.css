@@ -1,0 +1,136 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+.top-bar {
+    background: #002070;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+}
+
+.dark-mode .top-bar {
+    background: #444;
+}
+
+.top-bar button {
+    background: white;
+    color: #002070;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.top-bar button:hover {
+    background: #ddd;
+    transform: scale(1.05);
+}
+
+.dark-mode .top-bar button {
+    background: #555;
+    color: white;
+}
+
+.editor-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    height: calc(100vh - 50px);
+}
+
+.editor-container > * {
+    flex: 1;
+    height: 100%;
+    overflow: auto;
+}
+
+.EasyMDEContainer {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.EasyMDEContainer .CodeMirror {
+    flex: 1;
+    height: 100%;
+    font-size: 16px;
+}
+
+.EasyMDEContainer .CodeMirror pre.CodeMirror-line span.cm-header {
+    font-size: 16px !important;
+    font-weight: normal !important;
+}
+
+.markdown-body {
+    background: #f9f9f9;
+    padding: 20px;
+    width: 50%;
+    overflow-y: auto;
+}
+
+.markdown-body {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dark-mode .markdown-body {
+    background: #222;
+    color: #ddd;
+}
+
+@media (max-width: 768px) {
+    .editor-container {
+        flex-direction: column;
+    }
+
+    .top-bar {
+        padding: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .top-bar button {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .top-bar button {
+        padding: 6px 10px;
+    }
+
+    .EasyMDEContainer .CodeMirror {
+        font-size: 14px;
+    }
+}
