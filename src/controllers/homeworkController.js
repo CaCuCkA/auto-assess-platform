@@ -1,6 +1,7 @@
+const Test = require("../models/Test");
+const Report = require("../models/Report");
 const Homework = require("../models/Homework");
 const HomeworkParticipant = require("../models/HomeworkParticipant");
-const Report = require("../models/Report")
 
 exports.renderHomeworkPage = async (req, res) => {
     try {
@@ -20,9 +21,20 @@ exports.renderHomeworkPage = async (req, res) => {
             return res.status(404).render("error", { message: "Homework not found" });
         }
 
-        const participants = await HomeworkParticipant.getAllParticipants(homework.homework_id) || [];
+        const participants = await HomeworkParticipant.getAllParticipants(id) || [];
 
-        return res.render("homework", { homework, participants });
+        const tests = await Test.getAllByHomeworkId(id) || [];
+        const testsWithStatus = tests.map(test => ({
+            ...test,
+            status: test.is_active ? "included" : "excluded"
+        }));
+
+
+        return res.render("homework", { 
+            "homework": homework,
+            "participants": participants, 
+            "tests": testsWithStatus 
+        });
     } catch (error) {
         console.error("Error rendering homework page:", error);
         return res.status(500).render("error", { message: "Internal Server Error" });
@@ -144,9 +156,14 @@ exports.getParticipantReports = async (req, res) => {
     req.session.participantId = participantId;
 
     const reportData = await Report.getAllByParticipant(participantId);
+
     const reportWithUrls = reportData.map(report => ({
             ...report,
-            url: `/report/report-editor/${report.report_id}`
+            url: `/report/report-editor/${report.report_id}`,
+            "status": report.is_submited ? "submitted" :
+            report.is_rejected ? "rejected" :
+            report.updated_at !== report.created_at ? "reviewed" :
+            "unreviewed"
     }));
 
     res.render('report', { reports: reportWithUrls });
