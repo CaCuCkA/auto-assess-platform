@@ -1,100 +1,50 @@
-.report-status-container {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.8em;
-  text-align: center;
-  white-space: nowrap;
-  margin: 3px;
-  position: relative;
-  overflow: hidden;
-}
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
 
-.report-status-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: transparent;
-  pointer-events: none;
-}
-
-.report-status-container::after {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 22px;
-  pointer-events: none;
-}
-
-.report-status-container {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8em;
+body {
+    background-color: #fff;
+    font-family: "Open Sans", sans-serif;
     text-align: center;
-    white-space: nowrap;
-    margin: 3px;
+}
+
+.mainbox {
+    background-color: #fff;
+    margin: auto;
+    height: 600px;
+    width: 600px;
     position: relative;
-    overflow: hidden;
-  }
-  
-.report-status-container::after {
-    border: 2px solid red;
+}
+
+.err, .err2, .err3 {
+    color: #002070;
+    font-size: 11rem;
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 22px;
-    content: "";
 }
-  
-.report-status-container::after {
-    border: 3px solid;
+
+.err { left: 24%; top: 8%; }
+.err2 { left: 44%; top: 10%; }
+.err3 { left: 64%; top: 8%; }
+
+.far {
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 22px;
-    content: "";
-}
-  
-.reviewed {
-    color: #155724;
-}
-  
-.unreviewed {
-    color: #856404;
+    font-size: 8.5rem;
+    left: 42%;
+    top: 15%;
+    color: #002070;
 }
 
-.sended {
-    color: #004085;
+.msg {
+    font-size: 1.6rem;
+    position: absolute;
+    left: 16%;
+    top: 45%;
+    width: 75%;
 }
 
-.rejected {
-    color: #721c24;
+a {
+    text-decoration: none;
+    color: #002070;
 }
 
-
-.reviewed-container {
-    color: #155724;
-}
-  
-.unreviewed-container {
-    color: #856404;
-}
-
-.sended-container {
-    color: #004085;
-}
-
-.rejected-container {
-    color: #721c24;
+a:hover {
+    text-decoration: underline;
 }
