@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
 const session = require("express-session");
+const Handlebars = require('handlebars');
 
 require('dotenv').config({
     override: true,
@@ -10,10 +11,11 @@ require('dotenv').config({
 
 const authRoutes = require("./routes/authRoutes");
 const homeRoutes = require("./routes/homeRoutes");
-const homeworkRoutes = require("./routes/homeworkRoutes");
+const testRoutes = require("./routes/testRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const homeworkRoutes = require("./routes/homeworkRoutes");
 
-const authMiddleware = require("./util/authMiddleware"); 
+const authMiddleware = require("./util/authMiddleware");
 
 const app = express();
 
@@ -37,14 +39,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(publicPath));
 
+hbs.registerHelper('eq', function (a, b) {
+    return a === b;
+});
+
 app.set("view engine", "hbs");
 app.set("views", viewsPath);
 
-app.use("/auth", authRoutes);
-app.use(authMiddleware); 
+app.use(authMiddleware);
 app.use("/", homeRoutes);
-app.use("/homework", homeworkRoutes);
+app.use("/auth", authRoutes);
+app.use("/test", testRoutes);
 app.use("/report", reportRoutes);
+app.use("/homework", homeworkRoutes);
 
 app.use((req, res) => {
     res.status(404).render("error");
