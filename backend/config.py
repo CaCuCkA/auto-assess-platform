@@ -10,7 +10,7 @@ class DbConfig:
     password: str
     database: str
     host: str
-    port: int = 5432
+    port: int
 
     def construct_sqlalchemy_url(self, driver="asyncpg", host=None, port=None) -> str:
         if not host:
@@ -33,7 +33,8 @@ class DbConfig:
         password = env.str("POSTGRES_PASSWORD")
         database = env.str("POSTGRES_DB")
         host = env.str("DB_HOST")
-        return DbConfig(user=user, password=password, database=database, host=host)
+        port = env.int("DB_PORT")
+        return DbConfig(user=user, password=password, database=database, host=host, port=port)
 
 
 @dataclass
@@ -61,5 +62,5 @@ def load_config(path: str = None) -> Config:
 
     return Config(
         db=DbConfig.from_env(env),
-        jenkins=DbConfig.from_env(env)
+        jenkins=Jenkins.from_env(env)
     )
