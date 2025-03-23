@@ -1,41 +1,49 @@
-import logging
-import betterlogging as bl
-
-from quart import Quart
+from quart import Quart, g, current_app
 
 from jenkins.routes import jenkins_bp
 from config import load_config
-from database.setup import create_engine, create_session_pool
+from utils import setup_logging, get_logger
+from database import create_engine, create_session_pool, DatabaseGateway
 
-def setup_logging():
-    log_level = logging.INFO
-    bl.basic_colorized_config(level=log_level)
-
-    logging.basicConfig(
-        level=log_level,
-        format="%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s",
-    )
-    logger = logging.getLogger(__name__)
-    logger.info("Logging is configured.")
-
-setup_logging()
 
 app = Quart(__name__)
 app.register_blueprint(jenkins_bp, url_prefix='/jenkins')
 
-config = load_config("../.env")
-
 
 @app.before_serving
 async def init_resources():
-    logger = logging.getLogger(__name__)
-    logger.info("Initializing DB resources...")
+    setup_logging()
+    logger = get_logger(__name__)
 
+    config = load_config("../.env")
+    app.config["CONFIG"] = config
+    
+    logger.info("Initializing DB resources...")
     engine = create_engine(config.db)
     session_pool = await create_session_pool(engine)
     app.config["SESSION_POOL"] = session_pool
 
     logger.info("DB session pool created successfully.")
+
+
+@app.before_request
+async def init_db_gateway():
+    session_pool = current_app.config["SESSION_POOL"]
+    session = session_pool()
+    g.db_gateway = DatabaseGateway(session)
+
+
+@app.after_request
+async def cleanup_db_gateway(response):
+    if hasattr(g, "db_session"):
+        await g.db_session.close()
+    return response
+
+
+@app.route("/")
+async def index():
+    return {"message": "Quart app is running with DB Gateway!"}
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
