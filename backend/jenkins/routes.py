@@ -1,3 +1,4 @@
+from database import HomeworkParticipant
 from .setup import Credentials, Jobs
 from utils import get_logger
 
@@ -44,11 +45,9 @@ async def add_user_repo_credentials():
         logger.info(f"Creating credential: {cred_id}")
         result, code = await credential.create(cred_id, participant.ssh_key)
         return jsonify({"result": result}), code
-
     except ValueError:
         logger.exception("Invalid input types for participant_id or homework_id")
         return jsonify({"error": "Invalid input"}), 400
-
     except Exception as e:
         logger.exception("Unexpected error while creating Jenkins credential")
         return jsonify({"error": str(e)}), 500
@@ -76,11 +75,9 @@ async def delete_user_repo_credentials():
         logger.info(f"Deleting credential: {cred_id}")
         result, code = await credential.delete(cred_id)
         return jsonify({"result": result}), code
-
     except ValueError:
         logger.exception("Invalid input types for participant_id or homework_id")
         return jsonify({"error": "Invalid input"}), 400
-
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins credential")
         return jsonify({"error": str(e)}), 500
@@ -123,11 +120,9 @@ async def update_user_repo_credentials():
         logger.info(f"Creating new credential: {new_cred_id}")
         create_result, create_code = await credential.create(new_cred_id, ssh_key)
         return jsonify({"result": create_result}), create_code
-
     except ValueError:
         logger.exception("Invalid input types for participant_id or homework_id")
         return jsonify({"error": "Invalid input type"}), 400
-
     except Exception as e:
         logger.exception("Unexpected error while updating Jenkins credential")
         return jsonify({"error": str(e)}), 500
@@ -147,14 +142,12 @@ async def create_homework_job():
         )
 
         jobs = get_jenkins_instance(Jobs)
-        result = await jobs.create(homework.title)
+        result, code = await jobs.create(homework.title)
 
-        return jsonify({"result": result}), 200
-        
+        return jsonify({"result": result}), code
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
         return jsonify({"error": "Invalid input type"}), 400
-
     except Exception as e:
         logger.exception("Unexpected error while creating Jenkins job")
         return jsonify({"error": str(e)}), 500
@@ -174,14 +167,70 @@ async def delete_homework_job():
         )
 
         jobs = get_jenkins_instance(Jobs)
-        result = await jobs.delete(homework.title)
+        result, code = await jobs.delete(homework.title)
 
-        return jsonify({"result": result}), 200
-        
+        return jsonify({"result": result}), code
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
         return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while deleting Jenkins job")
+        return jsonify({"error": str(e)}), 500
+    
 
+@jenkins_bp.route("/update-job", methods=["POST"])
+async def update_homework_job():
+    try:
+        homework_id = int(request.args.get("id", 0))
+        admin_id = int(request.args.get("admin_id", 0))
+        if not admin_id or not homework_id:
+            logger.warning("Missing admin_id or homework_id in request args")
+            return jsonify({"error": "Missing admin_id or homework_id"}), 400
+
+        data = await request.get_json()
+        if not data:
+            logger.warning("Missing JSON body in request")
+            return jsonify({"error": "Missing JSON body"}), 400
+
+
+        homework = await g.db_gateway.homework.get_single(
+            admin_id=admin_id, homework_id=homework_id
+        )
+
+        new_name = data.get("new_name", homework.title)
+
+        jobs = get_jenkins_instance(Jobs)
+        result, code = await jobs.update(homework.title, new_name)
+        return jsonify({"result": result}), code
+    except ValueError:
+        logger.exception("Invalid input types for admin_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while deleting Jenkins job")
+        return jsonify({"error": str(e)}), 500
+
+@jenkins_bp.route("/trigger-job", methods=["POST"])
+async def trigger_homework_job():
+    try:
+        jobs = get_jenkins_instance(Jobs)
+        result, code = await jobs.trigger("test", GITHUB_URL="https://github.com/CaCuCkA/test-docker.git", GITHUB_SHA_COMMIT="9bfd8056f5bbf45bbe46b78fa76c2f54fb7acc4d", CREDENTIALS="mykola_yakokvin_4_1")
+        return jsonify({"result": result}), code
+    except ValueError:
+        logger.exception("Invalid input types for admin_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while deleting Jenkins job")
+        return jsonify({"error": str(e)}), 500
+    
+@jenkins_bp.route("/update", methods=["POST"])
+async def update():
+    try:
+        clauses=(HomeworkParticipant.homework_id==1, HomeworkParticipant.participant_id == 4)
+        fields = {"full_name": "Alex"}
+        await g.db_gateway.homework_participant.update(*clauses, **fields)
+    except ValueError:
+        logger.exception("Invalid input types for admin_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins job")
         return jsonify({"error": str(e)}), 500
