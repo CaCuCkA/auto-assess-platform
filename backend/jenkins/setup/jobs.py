@@ -75,7 +75,7 @@ class Jobs(Base):
         try:
             hashed_name = Jobs.__safe_job_name(name)
             async with aiojenkins.Jenkins(host=self._url, user=self._user, password=self._token) as jenkins:
-                await jenkins.builds.start(hashed_name, params) 
+                await jenkins.builds.start(hashed_name, **params) 
                 return "Job triggered successfully", 200
         except aiojenkins.JenkinsError as e:
             logger.error(f"Jenkins error while triggering job: {e}")

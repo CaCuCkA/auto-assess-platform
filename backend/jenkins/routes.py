@@ -213,7 +213,8 @@ async def update_homework_job():
 async def trigger_homework_job():
     try:
         jobs = get_jenkins_instance(Jobs)
-        result, code = await jobs.trigger("test", GITHUB_URL="https://github.com/CaCuCkA/test-docker.git", GITHUB_SHA_COMMIT="9bfd8056f5bbf45bbe46b78fa76c2f54fb7acc4d", CREDENTIALS="mykola_yakokvin_4_1")
+        params = {"GITHUB_URL":"https://github.com/CaCuCkA/test-docker.git", "GITHUB_SHA_COMMIT":"9bfd8056f5bbf45bbe46b78fa76c2f54fb7acc4d", "CREDENTIALS":"mykola_yakokvin_4_1"}
+        result, code = await jobs.trigger("test", **params)
         return jsonify({"result": result}), code
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
@@ -226,7 +227,7 @@ async def trigger_homework_job():
 async def update():
     try:
         clauses=(HomeworkParticipant.homework_id==1, HomeworkParticipant.participant_id == 4)
-        fields = {"full_name": "Alex"}
+        fields = {"full_name": "Mykola Yakovkin"}
         await g.db_gateway.homework_participant.update(*clauses, **fields)
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
