@@ -1,20 +1,22 @@
 from quart import Quart, g, current_app
 
-from jenkins.routes import jenkins_bp
+from github_events import github_bp
+from jenkins import jenkins_bp
 from config import load_config
 from utils import setup_logging, get_logger
 from database import create_engine, create_session_pool, DatabaseGateway
 
 
 app = Quart(__name__)
-app.register_blueprint(jenkins_bp, url_prefix='/jenkins')
 
+app.register_blueprint(jenkins_bp, url_prefix='/jenkins')
+app.register_blueprint(github_bp, url_prefix='/github')
+
+logger = get_logger(__name__)
 
 @app.before_serving
 async def init_resources():
     setup_logging()
-    logger = get_logger(__name__)
-
     config = load_config("../.env")
     app.config["CONFIG"] = config
     

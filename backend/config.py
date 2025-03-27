@@ -61,7 +61,7 @@ class Gemini:
     def from_env(env: Env):
         token = env.str("GEMINI_API_TOKEN")
         model = env.str("GEMINI_MODEL")
-        return Gemini(token=token, model=model)
+        return Gemini(token=token, model=model) 
     
 @dataclass
 class Config:
