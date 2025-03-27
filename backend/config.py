@@ -6,6 +6,21 @@ from sqlalchemy.engine.url import URL
 
 
 @dataclass
+class PullRequestPayload:
+    repository_owner:   str
+    repository_name:    str
+    pr_number:          int
+    pr_title:           str
+    pr_description:     str
+    commit_sha:         str
+    url:                str
+
+    @staticmethod
+    def to_json(dataclass_instance):
+        return json.dumps(asdict(dataclass_instance))
+    
+
+@dataclass
 class DbConfig:
     user: str
     password: str
@@ -63,27 +78,12 @@ class Gemini:
         model = env.str("GEMINI_MODEL")
         return Gemini(token=token, model=model) 
     
+
 @dataclass
 class Config:
     db: DbConfig
     jenkins: Jenkins
     gemini: Gemini
-
-
-@dataclass
-class PullRequestPayload:
-    repository_owner:   str
-    repository_name:    str
-    pr_number:          int
-    pr_title:           str
-    pr_description:     str
-    commit_sha:         str
-    url:                str
-
-    @staticmethod
-    def to_json(dataclass_instance):
-        return json.dumps(asdict(dataclass_instance))
-    
 
 def load_config(path: str = None) -> Config:
     env = Env()
