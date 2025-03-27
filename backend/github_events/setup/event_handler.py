@@ -26,23 +26,24 @@ class EventHandler:
         homework = await self.__db_gateway.homework.get_single(homework_id=homework_id)
         return homework
 
-    async def webhook_event(self, request: Request):
-        repo_url = RequestParser.get_repo_url(request)
+    async def webhook_event(self, request):
+        repo_url = await RequestParser.get_repo_url(request)
         if not repo_url:
             logger.error("Failed to get github repo url")
             return {"result": "Failed to get github repo url"}, 500
-        
+        logger.info(repo_url)
         participant = await self.__get_participant(url=repo_url)
         if not participant:
             logger.error("Failed to get github token")
             return {"result": "Failed to get github token"}, 500
         
-        parser = RequestParser(request, participant.ssh_key)
-
-        payload: PullRequestPayload  = parser.get_payload()
+        parser = await RequestParser.create(request, participant.ssh_key)
+        payload: PullRequestPayload = parser.get_payload()
         if not payload:
             logger.error("Failed to parse request and get payload")
             return {"result": "Failed to get github token"}, 500
+
+        logger.warning(payload)
         
         homework = await self.__get_homework(homework_id=participant.homework_id)
         if not homework:
@@ -51,7 +52,7 @@ class EventHandler:
         
         jobs = Jobs(url=self.__config.jenkins.url,
                     user=self.__config.jenkins.user,
-                    password=self.__config.jenkins.token)
+                    token=self.__config.jenkins.token)
 
         result, code = await jobs.trigger(homework.title)
 

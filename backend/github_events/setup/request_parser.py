@@ -3,20 +3,34 @@ from quart import Request
 from github import Github
 from typing import List
 
+from utils import get_logger
 from config import PullRequestPayload
 
+
+logger = get_logger(__name__)
+
 class RequestParser:
-    def __init__(self, request: Request, token):
-        self.__body = request.json
+    def __init__(self, token, body, headers):
         self.__gh_client = Github(token)
-        self.__headers = request.headers
-    
+        self.__body = body
+        self.__headers = headers
+
+
     @staticmethod
-    def get_repo_url(request) -> str:
-        return request.json.get("git_url", "")
+    async def get_repo_url(request) -> str:
+        body = await request.get_json()
+        return body.get("pull_request", {}).get("head", {}).get("repo", {}).get("clone_url")
+
+
+    @classmethod
+    async def create(cls, request, token):
+        body = await request.get_json()
+        headers = request.headers
+        return cls(token, body, headers)
     
+
     def get_payload(self) -> PullRequestPayload:
-        if not self.__is_pull_request_event(self.__payload.headers):
+        if not self.__is_pull_request_event():
             return None 
         
         pull_number = self.__extract_pull_number()
@@ -58,5 +72,5 @@ class RequestParser:
     
 
     def __extract_url(self) -> str:
-        return self.__body.get("git_url", "")
+        return self.__body.get("pull_request", {}).get("head", {}).get("repo", {}).get("clone_url")
     
