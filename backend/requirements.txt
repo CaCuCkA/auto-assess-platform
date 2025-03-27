@@ -4,7 +4,7 @@ aiojenkins
 quart>=0.19,<1.0
 
 # Logging
-betterloggin
+betterlogging
 
 # Environment variables
 environs~=9.0
@@ -14,3 +14,6 @@ python-dotenv
 SQLAlchemy~=2.0.20
 sqlalchemy-stubs~=0.4
 asyncpg
+
+#Github
+PyGithub==2.5.0
