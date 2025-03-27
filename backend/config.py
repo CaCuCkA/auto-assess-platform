@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, asdict
 
 from environs import Env
 from sqlalchemy.engine.url import URL
@@ -52,9 +53,37 @@ class Jenkins:
 
 
 @dataclass
+class Gemini:
+    token: str
+    model: str
+
+    @staticmethod
+    def from_env(env: Env):
+        token = env.str("GEMINI_API_TOKEN")
+        model = env.str("GEMINI_MODEL")
+        return Gemini(token=token, model=model)
+    
+@dataclass
 class Config:
     db: DbConfig
     jenkins: Jenkins
+    gemini: Gemini
+
+
+@dataclass
+class PullRequestPayload:
+    repository_owner:   str
+    repository_name:    str
+    pr_number:          int
+    pr_title:           str
+    pr_description:     str
+    commit_sha:         str
+    url:                str
+
+    @staticmethod
+    def to_json(dataclass_instance):
+        return json.dumps(asdict(dataclass_instance))
+    
 
 def load_config(path: str = None) -> Config:
     env = Env()
@@ -62,5 +91,6 @@ def load_config(path: str = None) -> Config:
 
     return Config(
         db=DbConfig.from_env(env),
-        jenkins=Jenkins.from_env(env)
+        jenkins=Jenkins.from_env(env),
+        gemini=Gemini.from_env(env),
     )
