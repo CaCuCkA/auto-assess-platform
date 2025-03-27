@@ -1,4 +1,10 @@
+# Async HTTP and Web Frameworks
+aiohttp
+aiojenkins
 quart>=0.19,<1.0
+
+# Logging
+betterloggin
 
 # Environment variables
 environs~=9.0
