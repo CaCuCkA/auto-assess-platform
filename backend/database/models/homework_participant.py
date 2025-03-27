@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, DateTime
+from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, DateTime, JSON
 
 from .base import Base, TimestampMixin, TableNameMixin
-
 
 class HomeworkParticipant(Base, TimestampMixin, TableNameMixin):
     """
@@ -18,3 +17,5 @@ class HomeworkParticipant(Base, TimestampMixin, TableNameMixin):
 
     last_build_time: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=True)
     build_success: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    pr_payload: Mapped[JSON] = mapped_column(JSON)
