@@ -7,17 +7,16 @@ from sqlalchemy.engine.url import URL
 
 @dataclass
 class PullRequestPayload:
-    repository_owner:   str
-    repository_name:    str
-    pr_number:          int
-    pr_title:           str
-    pr_description:     str
-    commit_sha:         str
-    url:                str
+    repository_owner: str
+    repository_name: str
+    pr_number: int
+    pr_title: str
+    pr_description: str
+    commit_sha: str
+    url: str
 
-    @staticmethod
-    def to_json(dataclass_instance):
-        return json.dumps(asdict(dataclass_instance))
+    def to_json(self):
+        return json.dumps(asdict(self))
     
 
 @dataclass
