@@ -1,9 +1,8 @@
 import json
+import aiohttp
 from typing import Tuple
 
 from .base import Base
-from aiohttp import ClientSession, BasicAuth, ClientError
-
 
 class Credentials(Base):
     def __init__(self, url, user, token):
@@ -38,10 +37,10 @@ class Credentials(Base):
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         try:
-            async with ClientSession() as session:
+            async with aiohttp.ClientSession() as session:
                 async with session.post(
                     url,
-                    auth=BasicAuth(self._user, self._token),
+                    auth=aiohttp.BasicAuth(self._user, self._token),
                     headers=headers,
                     data=data,
                 ) as response:
@@ -50,7 +49,7 @@ class Credentials(Base):
                         return f"Failed to create credential. Status: {response.status}, Response: {text}", response.status
                     return "Credential created successfully.", 200
 
-        except ClientError as e:
+        except aiohttp.ClientError as e:
             return f"HTTP error while creating credential: {e}", 502
 
         except Exception as e:
@@ -61,16 +60,16 @@ class Credentials(Base):
         url = self.__build_url(id=id)
 
         try:
-            async with ClientSession() as session:
+            async with aiohttp.ClientSession() as session:
                 async with session.post(
                     url=url,
-                    auth=BasicAuth(self._user, self._token)
+                    auth=aiohttp.BasicAuth(self._user, self._token)
                 ) as response:
                     if response.status != 200:
                         text = await response.text()
                         return f"Failed to create credential. Status: {response.status}, Response: {text}", response.status
                     return "Credential deleted successfully.", 200
-        except ClientError as e:
+        except aiohttp.ClientError as e:
             return f"HTTP error while deleting credential: {e}", 502
 
         except Exception as e:

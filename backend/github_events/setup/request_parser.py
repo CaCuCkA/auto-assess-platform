@@ -1,5 +1,4 @@
 
-from quart import Request
 from github import Github
 from typing import List
 
