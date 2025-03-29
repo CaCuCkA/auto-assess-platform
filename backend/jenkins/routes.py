@@ -212,23 +212,26 @@ async def update_homework_job():
 @jenkins_bp.route("/trigger-job", methods=["POST"])
 async def trigger_homework_job():
     try:
+        homework_id = int(request.args.get("id", 0))
+        participant_id = int(request.args.get("participant_id"), 0)
+        if not homework_id or not participant_id:
+            logger.warning("Missing homework_id in request args")
+            return jsonify({"error": "Missing homework_id"}), 400
+        
+        data = await request.get_json()
+        if not data:
+            logger.warning("Missing JSON body in request")
+            return jsonify({"error": "Missing JSON body"}), 400
+        
+        credential_id = build_credential_id(full_name=data.get("full_name", ""),
+                                            participant_id=participant_id,
+                                            homework_id=homework_id)
+
+        params = {"GITHUB_URL":data.get("url"), "GITHUB_SHA_COMMIT":data.get("commit_sha"), "CREDENTIALS":credential_id}
+        
         jobs = get_jenkins_instance(Jobs)
-        params = {"GITHUB_URL":"https://github.com/CaCuCkA/test-docker.git", "GITHUB_SHA_COMMIT":"9bfd8056f5bbf45bbe46b78fa76c2f54fb7acc4d", "CREDENTIALS":"mykola_yakokvin_4_1"}
-        result, code = await jobs.trigger("test", **params)
+        result, code = await jobs.trigger(data.get("homework_title"), **params)
         return jsonify({"result": result}), code
-    except ValueError:
-        logger.exception("Invalid input types for admin_id or homework_id")
-        return jsonify({"error": "Invalid input type"}), 400
-    except Exception as e:
-        logger.exception("Unexpected error while deleting Jenkins job")
-        return jsonify({"error": str(e)}), 500
-    
-@jenkins_bp.route("/update", methods=["POST"])
-async def update():
-    try:
-        clauses=(HomeworkParticipant.homework_id==1, HomeworkParticipant.participant_id == 4)
-        fields = {"full_name": "Mykola Yakovkin"}
-        await g.db_gateway.homework_participant.update(*clauses, **fields)
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
         return jsonify({"error": "Invalid input type"}), 400
