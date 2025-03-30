@@ -1,4 +1,3 @@
-from database import HomeworkParticipant
 from .setup import Credentials, Jobs
 from utils import get_logger
 
@@ -111,10 +110,10 @@ async def update_user_repo_credentials():
 
         old_cred_id = build_credential_id(participant.full_name, participant_id, homework_id)
         logger.info(f"Deleting old credential: {old_cred_id}")
-        delete_result, delete_code = await credential.delete(old_cred_id)
-        if delete_code != 200:
-            logger.error(f"Failed to delete old credential {old_cred_id}: {delete_result}")
-            return jsonify(delete_result), delete_code
+        result, code = await credential.delete(old_cred_id)
+        if code != 200:
+            logger.error(f"Failed to delete old credential {old_cred_id}: {result}")
+            return jsonify(result), code
 
         new_cred_id = build_credential_id(full_name, participant_id, homework_id)
         logger.info(f"Creating new credential: {new_cred_id}")
@@ -227,7 +226,15 @@ async def trigger_homework_job():
                                             participant_id=participant_id,
                                             homework_id=homework_id)
 
-        params = {"GITHUB_URL":data.get("url"), "GITHUB_SHA_COMMIT":data.get("commit_sha"), "CREDENTIALS":credential_id}
+        port = current_app.config["CONFIG"].backend.port
+
+        params = {
+            "GITHUB_URL":data.get("url"),
+            "GITHUB_SHA_COMMIT":data.get("commit_sha"),
+            "CREDENTIALS":credential_id,
+            "SUCCESS_ENDPOINT": f"http://localhost:{port}/github/success?id={homework_id}&participant_id={participant_id}", 
+            "FAILED_ENDPOINT": f"http://localhost:{port}/github/failed?id={homework_id}&participant_id={participant_id}"
+        }
         
         jobs = get_jenkins_instance(Jobs)
         result, code = await jobs.trigger(data.get("homework_title"), **params)
