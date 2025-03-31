@@ -24,9 +24,9 @@ class EventHandler:
     async def webhook_event(self, request):
         try:
             repo_url = await RequestParser.get_repo_url(request)
+            participant = await self.__get_participant(repo_url=repo_url)
             parser = await RequestParser.create(request, participant.ssh_key)
             payload = parser.get_payload()
-            participant = await self.__get_participant(repo_url=repo_url)
             homework = await self.__get_homework(homework_id=participant.homework_id)
 
             await self.__trigger_jenkins_job(participant, payload, homework)
@@ -69,9 +69,9 @@ class EventHandler:
                 raise ValueError({"error": "Missing participant_id or homework_id"})
             
             data = await request.get_json()
-            pr_comment = data.get("error", "")
-            logger.error(pr_comment)
-
+            pr_comment = data.get("message", "")
+            logger.info(pr_comment)
+            return {"result": "success"}, 200
             participant = await self.__get_participant(participant_id=participant_id, homework_id=homework_id)
             if not participant:
                 logger.error(f"Participant not found for ID {participant_id} and homework {homework_id}")
