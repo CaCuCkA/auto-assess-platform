@@ -16,11 +16,11 @@ class CodeReviewer:
         self.__ai_manager = ai_manager
 
     
-    def analyze_code(self, parsed_diff: List[Dict[str, Any]], pr_details: PullRequestPayload) -> List[Dict[str, Any]]:
+    async def analyze_code(self, parsed_diff: List[Dict[str, Any]], pr_details: PullRequestPayload) -> List[Dict[str, Any]]:
         comments = []
         for file_data in self.__get_valid_file(parsed_diff):
             file_path = file_data["path"]
-            comments.extend(self._process_file_hunks(file_path, file_data, pr_details))
+            comments.extend(await self.__process_file_hunks(file_path, file_data, pr_details))
         
         return comments
         
@@ -29,11 +29,11 @@ class CodeReviewer:
         return [file_data for file_data in parsed_diff if file_data.get("path") and file_data["path"] != "/dev/null"]
     
 
-    def _process_file_hunks(self, file_path, file_data: Dict[str, Any], pr_details: PullRequestPayload) -> List[Dict[str, Any]]:
+    async def __process_file_hunks(self, file_path, file_data: Dict[str, Any], pr_details: PullRequestPayload) -> List[Dict[str, Any]]:
         comments = []
         for hunk_data in file_data.get("hunks", []):
             hunk = self.__create_hunk(hunk_data.get("lines", []), *self.__get_source_target_start(hunk_data.get("header", "")))
-            ai_response = self.__get_ai_review(file_path, hunk, pr_details)
+            ai_response = await self.__get_ai_review(file_path, hunk, pr_details)
             comments.extend(self.__create_comments(file_path, hunk, ai_response))
         return comments
     
@@ -56,8 +56,8 @@ class CodeReviewer:
         return hunk
 
 
-    def __get_ai_review(self, file_path: str, hunk: Hunk, pr_details: PullRequestPayload) -> List[Dict[str, str]]:
-        return self.__ai_manager.get_ai_response(self.__ai_manager.create_prompt(file_path, hunk, pr_details))
+    async def __get_ai_review(self, file_path: str, hunk: Hunk, pr_details: PullRequestPayload) -> List[Dict[str, str]]:
+        return await self.__ai_manager.handle_request(file_path, hunk, pr_details)
 
 
     def __create_comments(self, file_path: str, hunk: Hunk, ai_responses: List[Dict[str, str]]) -> List[Dict[str, Any]]:
