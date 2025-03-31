@@ -32,22 +32,36 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: "\${params.GITHUB_URL}", branch: 'main', credentialsId: "\${params.CREDENTIALS}"
-                sh "git checkout \${params.GITHUB_SHA_COMMIT}"
+                script {
+                    try {
+                        git url: "\${params.GITHUB_URL}", branch: 'main', credentialsId: "\${params.CREDENTIALS}"
+                        sh "git checkout \${params.GITHUB_SHA_COMMIT}"
+                    } catch (Exception e) {
+                        error "Git checkout failed: \${e.getMessage()}"
+                    }
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker-compose up --build -d'
+                script {
+                    def buildResult = sh(script: 'docker-compose up --build -d', returnStatus: true)
+                    if (buildResult != 0) {
+                        error "Docker build failed"
+                    }
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                    bash -c "source /home/Mykola/venv/bin/activate && python -m unittest discover -s /home/Mykola/test"
-                '''
+                script {
+                    def testResults = sh(script: 'bash -c "source /home/Mykola/venv/bin/activate && python -m unittest discover -s /home/Mykola/test"', returnStdout: true).trim()
+                    if (testResults.contains('FAILED')) {
+                        error "Tests failed: \${testResults}"
+                    }
+                }
             }
         }
     }
@@ -55,6 +69,16 @@ pipeline {
     post {
         always {
             sh 'docker-compose down'
+        }
+        failure {
+            script {
+                // Correctly format the error message
+                def errorMessage = "\${env.BUILD_URL}console"
+                // Use Groovy's single-quoted string to avoid parsing issues with JSON's double quotes
+                def jsonBody = '{"status": "failure", "message": "Build or test failed. Details at: ' + errorMessage + '"}'
+                
+                sh "curl -X POST '\${FAILED_ENDPOINT}' -H 'Content-Type: application/json' -d '\${jsonBody}'"
+            }
         }
     }
 }
