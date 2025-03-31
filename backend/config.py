@@ -16,6 +16,11 @@ class PullRequestPayload:
 
     def to_json(self):
         return json.dumps(asdict(self))
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> 'PullRequestPayload':
+        data = json.loads(json_str)
+        return cls(**data)
 
 
 @dataclass
