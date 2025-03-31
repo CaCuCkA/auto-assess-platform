@@ -1,7 +1,8 @@
-from quart import Quart, g, current_app
+from quart import Quart, g, current_app, jsonify
 
 from github_events import github_bp
 from jenkins import jenkins_bp
+from ai_report import ai_bp
 from config import load_config
 from utils import setup_logging, get_logger
 from database import create_engine, create_session_pool, DatabaseGateway
@@ -9,10 +10,14 @@ from database import create_engine, create_session_pool, DatabaseGateway
 app = Quart(__name__)
 
 config = load_config("../.env")
-app.config["CONFIG"] = config
+app.config.update({
+    "CONFIG": config,
+    "SESSION_POOL": None
+})
 
 app.register_blueprint(jenkins_bp, url_prefix='/jenkins')
 app.register_blueprint(github_bp, url_prefix='/github')
+app.register_blueprint(ai_bp, url_prefix='/ai')
 
 logger = get_logger(__name__)
 
@@ -22,28 +27,24 @@ async def init_resources():
     
     logger.info("Initializing DB resources...")
     engine = create_engine(app.config["CONFIG"].db)
-    session_pool = await create_session_pool(engine)
-    app.config["SESSION_POOL"] = session_pool
+    app.config["SESSION_POOL"] = await create_session_pool(engine)
 
     logger.info("DB session pool created successfully.")
 
 @app.before_request
 async def init_db_gateway():
-    session_pool = current_app.config["SESSION_POOL"]
-    g.db_session = session_pool()
-    g.db_gateway = DatabaseGateway(g.db_session)
+    session_pool = app.config["SESSION_POOL"]
+    db_session = session_pool()
+    g.db_gateway = DatabaseGateway(db_session)
 
 @app.after_request
 async def cleanup_db_gateway(response):
-    if hasattr(g, "db_session"):
-        await g.db_session.close()  # Close the session if it exists
-        del g.db_session  # Optionally, remove the reference from `g` after closing
+    db_gateway = getattr(g, 'db_gateway', None)
+    if db_gateway:
+        await db_gateway.session.close()
     return response
 
-@app.route("/")
-async def index():
-    return {"message": "Quart app is running with DB Gateway!"}
 
 if __name__ == "__main__":
-    port = app.config["CONFIG"].backend.port
+    port = config.backend.port
     app.run(host="0.0.0.0", debug=True, port=port)
