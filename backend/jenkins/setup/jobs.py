@@ -31,15 +31,13 @@ class Jobs(Base):
     
     async def create(self, name: str):
         script = await self.__load_template_and_render(name)
-        auth = aiohttp.BasicAuth(login=self._user, password=self._token)
         try:
             async with aiohttp.ClientSession() as session:
-                url = f"{self._url}/scriptText"
-                async with session.post(url, auth=auth, data={"script": script}) as response:
+                async with session.post(url= f"{self._url}/scriptText",
+                                        auth=aiohttp.BasicAuth(login=self._user, password=self._token),
+                                        data={"script": script}) as response:
                     if response.status == 200:
-                        if response.headers.get('Content-Encoding') == 'gzip':
-                            result = await response.read()
-                            logger.info(f"Job creation result: {result}")
+                        logger.info(await response.text())
                         return "Job created successfully", 200
                     else:
                         result = await response.text()
@@ -57,9 +55,10 @@ class Jobs(Base):
         try:
             hashed_name = Jobs.__safe_job_name(name)
             async with aiohttp.ClientSession() as session:
-                async with session.delete(url=f"{self._url}/job/{hashed_name}", 
+                logger.info(f"{self._url}/job/{hashed_name}/")
+                async with session.delete(url=f"{self._url}/job/{hashed_name}/", 
                                           auth=aiohttp.BasicAuth(self._user, self._token)) as response:
-                    if response.status == 200 or response.status == 204:
+                    if response.status == 204:
                         logger.info("Job deleted successfully")
                         return "Job deleted successfully", 200
                     response_text = await response.text()

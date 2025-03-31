@@ -232,8 +232,8 @@ async def trigger_homework_job():
             "GITHUB_URL":data.get("url"),
             "GITHUB_SHA_COMMIT":data.get("commit_sha"),
             "CREDENTIALS":credential_id,
-            "SUCCESS_ENDPOINT": f"http://localhost:{port}/github/success?id={homework_id}&participant_id={participant_id}", 
-            "FAILED_ENDPOINT": f"http://localhost:{port}/github/failed?id={homework_id}&participant_id={participant_id}"
+            "SUCCESS_ENDPOINT": f"http://localhost:{port}/github/success?id={participant_id}&homework_id={homework_id}", 
+            "FAILED_ENDPOINT": f"http://localhost:{port}/github/failed?id={participant_id}&homework_id={homework_id}"
         }
         
         jobs = get_jenkins_instance(Jobs)
