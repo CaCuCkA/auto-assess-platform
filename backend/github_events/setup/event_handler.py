@@ -1,9 +1,11 @@
 import aiohttp
-from utils import get_logger
 from quart import jsonify
+
+from utils import get_logger
 from config import Config, PullRequestPayload
 from database import DatabaseGateway, HomeworkParticipant
 
+from .diff_handler import DiffHandler
 from .request_parser import RequestParser
 from .pr_handler import PullRequestHandler
 
@@ -60,31 +62,63 @@ class EventHandler:
         if not result:
             raise RuntimeError("Failed to update participant record in database")
 
-    async def failed_event(self, request):
+    async def success_event(self, request):
         try:
-            participant_id = int(request.args.get("id", 0))
-            homework_id = int(request.args.get("homework_id", 0))
-
-            if not participant_id or not homework_id:
-                raise ValueError({"error": "Missing participant_id or homework_id"})
+            participant = await self.__common_part(request)
+            pr_payload = PullRequestPayload.from_json(participant.pr_payload)
+            diff_handler = DiffHandler(token=participant.ssh_key)
+            diff = await diff_handler.get_diff(pr_payload.repository_owner,
+                                               pr_payload.repository_name,
+                                               pr_payload.pr_number)
             
-            data = await request.get_json()
-            pr_comment = data.get("message", "")
-            logger.info(pr_comment)
+
+            async with aiohttp.ClientSession() as session:
+                url = f"http://localhost:{self.__config.backend.port}/ai/check-code"
+                headers = {'Content-Type': 'application/json'}
+                body = {
+                    "pr_payload": pr_payload.to_json(),
+                    "diff": diff
+                }
+
+                async with session.post(url, json=body, headers=headers) as response:
+                    if response.status != 200:
+                        return {"error": "Failed generate AI report"}, 500
+                    data = await response.json()
+                    logger.info(f"{data=}")
+                    # comments = data.get("ai_comments", "")
+
             return {"result": "success"}, 200
-            participant = await self.__get_participant(participant_id=participant_id, homework_id=homework_id)
-            if not participant:
-                logger.error(f"Participant not found for ID {participant_id} and homework {homework_id}")
-                return jsonify({"error": "Participant not found"}), 404
-
-            
-            pr_handler = PullRequestHandler(token=participant.ssh_key, payload=participant.pr_payload)
-            pr_handler.comment_and_close_pr(final_comment=pr_comment)
-
         except Exception as e:
             logger.error(f"Error handling failed event: {str(e)}")
             return {"result": str(e)}, 500
+
+    async def failed_event(self, request):
+        try:
+            data = await request.get_json()
+            pr_comment = data.get("message", "")
+            participant = self.__common_part(request)
+            pr_payload = PullRequestPayload.from_json(participant.pr_payload)
+            pr_handler = PullRequestHandler(token=participant.ssh_key, payload=pr_payload)
+            pr_handler.comment_and_close_pr(final_comment=pr_comment)
+            return {"result": "success"}, 200
+        except Exception as e:
+            logger.error(f"Error handling failed event: {str(e)}")
+            return {"result": str(e)}, 500
+    
+    async def __common_part(self, request):
+        participant_id = int(request.args.get("id", 0))
+        homework_id = int(request.args.get("homework_id", 0))
+        if not participant_id or not homework_id:
+            raise ValueError({"error": "Missing participant_id or homework_id"})
         
+        participant = await self.__get_participant(participant_id=participant_id, homework_id=homework_id)
+        if not participant:
+            logger.error(f"Participant not found for ID {participant_id} and homework {homework_id}")
+            return jsonify({"error": "Participant not found"}), 404
+
+        return participant
+
+         
     async def __get_participant(self, **filter):
         participant = await self.__db_gateway.homework_participant.get_single(**filter)
         if not participant:

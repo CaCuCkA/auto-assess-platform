@@ -5,7 +5,7 @@ import hudson.model.ParametersDefinitionProperty
 import hudson.model.StringParameterDefinition
 
 def jenkinsInstance = Jenkins.instance
-def jobName = "{{ job_name }}"
+def jobName = "{{ job_name }}" 
 
 def pipelineJob = jenkinsInstance.getItem(jobName)
 if (pipelineJob == null) {
@@ -14,7 +14,6 @@ if (pipelineJob == null) {
     println "Job '${jobName}' already exists. Updating its configuration."
 }
 
-// Define build parameters
 def params = [
     new StringParameterDefinition("GITHUB_URL", "https://github.com/example/repo", "GitHub repository URL"),
     new StringParameterDefinition("GITHUB_SHA_COMMIT", "main", "GitHub branch or commit SHA"),
@@ -22,8 +21,16 @@ def params = [
     new StringParameterDefinition("SUCCESS_ENDPOINT", "success-url", "URL to notify in case of successful pipeline execution."),
     new StringParameterDefinition("FAILED_ENDPOINT", "failed-url", "URL to notify in case of pipeline failure.")
 ]
-def parameters = new ParametersDefinitionProperty(params)
-pipelineJob.addProperty(parameters)
+
+if (!pipelineJob.getProperty(ParametersDefinitionProperty)) {
+    def parameters = new ParametersDefinitionProperty(params)
+    pipelineJob.addProperty(parameters)
+} else {
+    pipelineJob.removeProperty(ParametersDefinitionProperty)
+    def parameters = new ParametersDefinitionProperty(params)
+    pipelineJob.addProperty(parameters)
+    println "Updated the parameters for '${jobName}'."
+}
 
 def pipelineScript = """
 pipeline {
@@ -34,10 +41,13 @@ pipeline {
             steps {
                 script {
                     try {
-                        git url: "\${params.GITHUB_URL}", branch: 'main', credentialsId: "\${params.CREDENTIALS}"
-                        sh "git checkout \${params.GITHUB_SHA_COMMIT}"
+                        git url: "\$GITHUB_URL", branch: 'main', credentialsId: "\$CREDENTIALS"
+                        sh "git checkout \$GITHUB_SHA_COMMIT"
                     } catch (Exception e) {
-                        error "Git checkout failed: \${e.getMessage()}"
+                        def message = "Git checkout failed: \${e.getMessage()}"
+                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
+                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
+                        error message
                     }
                 }
             }
@@ -48,6 +58,9 @@ pipeline {
                 script {
                     def buildResult = sh(script: 'docker-compose up --build -d', returnStatus: true)
                     if (buildResult != 0) {
+                        def message = "Docker build failed with status: \${buildResult}"
+                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
+                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
                         error "Docker build failed"
                     }
                 }
@@ -59,7 +72,10 @@ pipeline {
                 script {
                     def testResults = sh(script: 'bash -c "source /home/Mykola/venv/bin/activate && python -m unittest discover -s /home/Mykola/test"', returnStdout: true).trim()
                     if (testResults.contains('FAILED')) {
-                        error "Tests failed: \${testResults}"
+                        def message = "Tests failed: \${testResults}"
+                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
+                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
+                        error message
                     }
                 }
             }
@@ -70,20 +86,15 @@ pipeline {
         always {
             sh 'docker-compose down'
         }
-        failure {
-            script {
-                // Correctly format the error message
-                def errorMessage = "\${env.BUILD_URL}console"
-                // Use Groovy's single-quoted string to avoid parsing issues with JSON's double quotes
-                def jsonBody = '{"status": "failure", "message": "Build or test failed. Details at: ' + errorMessage + '"}'
-                
-                sh "curl -X POST '\${FAILED_ENDPOINT}' -H 'Content-Type: application/json' -d '\${jsonBody}'"
-            }
+
+        success {
+            sh "curl -X POST '\$SUCCESS_ENDPOINT'"
         }
     }
-}
-"""
 
+}
+
+"""
 
 def flowDef = new CpsFlowDefinition(pipelineScript, true)
 pipelineJob.setDefinition(flowDef)

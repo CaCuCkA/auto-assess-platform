@@ -17,7 +17,9 @@ async def webhook_handler():
 
 @github_bp.route("/success", methods=["POST"])
 async def successed_build_handler():
-    pass
+    event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])
+    result, code = await event_handler.success_event(request)
+    return jsonify(result), code
 
 
 @github_bp.route("/failed", methods=["POST"])
