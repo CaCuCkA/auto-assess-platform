@@ -6,14 +6,26 @@ quart>=0.19,<1.0
 # Logging
 betterlogging
 
-# Environment variables
+# Environment Variables Handling
 environs~=9.0
 python-dotenv
 
-# PostgreSQL + SQLAlchemy async
+# Diff Library
+unidiff==0.7.5
+
+# PostgreSQL and SQLAlchemy (Async)
 SQLAlchemy~=2.0.20
 sqlalchemy-stubs~=0.4
 asyncpg
 
-#Github
+# GitHub API Integration
 PyGithub==2.5.0
+
+# Google APIs
+google-ai-generativelanguage==0.6.10
+google-api-core==2.23.0
+google-api-python-client==2.153.0
+google-auth==2.36.0
+google-auth-httplib2==0.2.0
+google-generativeai==0.8.3
+googleapis-common-protos==1.66.0
