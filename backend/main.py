@@ -30,13 +30,14 @@ async def init_resources():
 @app.before_request
 async def init_db_gateway():
     session_pool = current_app.config["SESSION_POOL"]
-    session = session_pool()
-    g.db_gateway = DatabaseGateway(session)
+    g.db_session = session_pool()
+    g.db_gateway = DatabaseGateway(g.db_session)
 
 @app.after_request
 async def cleanup_db_gateway(response):
     if hasattr(g, "db_session"):
-        await g.db_session.close()
+        await g.db_session.close()  # Close the session if it exists
+        del g.db_session  # Optionally, remove the reference from `g` after closing
     return response
 
 @app.route("/")
