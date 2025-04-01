@@ -10,11 +10,15 @@ class PullRequestHandler:
         self.__gh_client = Github(token)
         self.__payload = payload
     
-    def add_review_comments(self, comment_body):
+    def add_review_comments(self, comments):
         try:
             repo = self.__gh_client.get_repo(f"{self.__payload.repository_owner}/{self.__payload.repository_name}")
             pr = repo.get_pull(self.__payload.pr_number)
-            pr.create_review(body=comment_body, event="COMMENT")
+            pr.create_review(
+                body="AI generated review comments",
+                comments=comments,
+                event="COMMENT"
+            )
         except GithubException as e:
             logger.error(f"Failed to add review comments: {e}")
             raise

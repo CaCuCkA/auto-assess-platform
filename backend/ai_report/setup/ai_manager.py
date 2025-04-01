@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List
-from unidiff import Hunk, PatchedFile
+from unidiff import Hunk
 from config import PullRequestPayload
 import google.generativeai as Client
 
@@ -10,12 +10,12 @@ class Gemini:
         self.__model = Client.GenerativeModel(config.model)
 
 
-    def create_prompt(self, file: PatchedFile, hunk: Hunk, pr_details: PullRequestPayload) -> str:
+    def create_prompt(self, file_path: str, hunk: Hunk, pr_details: PullRequestPayload) -> str:
         return f"""
             Your task is to review the following code changes. Please follow these guidelines:
             {self.format_guidelines()}
             Context Information:
-            File: {file.path}
+            File: {file_path}
             PR Title: {pr_details.pr_title}
             PR Description: 
             ---
@@ -71,10 +71,10 @@ class AIManager:
         self.__gemini_service = Gemini(config)
     
 
-    async def handle_request(self, file: PatchedFile, hunk: Hunk, pr_details: PullRequestPayload):
+    async def handle_request(self, file_path: str, hunk: Hunk, pr_details: PullRequestPayload):
         if not self.__gemini_service:
             raise RuntimeError("No active LLM service available")
-        prompt = self.__gemini_service.create_prompt(file, hunk, pr_details)
+        prompt = self.__gemini_service.create_prompt(file_path, hunk, pr_details)
         return await self.__gemini_service.get_ai_response(prompt)
     
 

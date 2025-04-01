@@ -65,12 +65,16 @@ class CodeReviewer:
 
 
     def __format_comment(self, file_path: str, hunk: Hunk, response: Dict[str, str]) -> Dict[str, Any]:
-        line_number = int(response.get("lineNumber", 0))
-        side = response.get("side", "").upper()
-        if side and hunk.source_start <= line_number < hunk.source_start + hunk.source_length or hunk.target_start <= line_number < hunk.target_start + hunk.target_length:
-            return {
-                "body": response["reviewComment"],
-                "path": file_path.strip(),
-                "line": line_number,
-                "side": side,
-            }
+        try:
+            line_number = int(response.get("lineNumber", 0))
+            side = response.get("side", "").upper()
+            if side and hunk.source_start <= line_number < hunk.source_start + hunk.source_length or hunk.target_start <= line_number < hunk.target_start + hunk.target_length:
+                return {
+                    "body": response["reviewComment"],
+                    "path": file_path.strip(),
+                    "line": line_number,
+                    "side": side,
+                }
+        except (KeyError, TypeError, ValueError):
+            pass
+        return None

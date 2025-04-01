@@ -71,6 +71,7 @@ class EventHandler:
                                                pr_payload.repository_name,
                                                pr_payload.pr_number)
             
+            logger.info(f"{diff=}")
 
             async with aiohttp.ClientSession() as session:
                 url = f"http://localhost:{self.__config.backend.port}/ai/check-code"
@@ -83,20 +84,20 @@ class EventHandler:
                 async with session.post(url, json=body, headers=headers) as response:
                     if response.status != 200:
                         return {"error": "Failed generate AI report"}, 500
-                    data = await response.json()
-                    logger.info(f"{data=}")
-                    # comments = data.get("ai_comments", "")
-
+                    comments = await response.json()
+                    logger.info(comments)
+                    pr_handler = PullRequestHandler(token=participant.ssh_key, payload=pr_payload)
+                    pr_handler.add_review_comments(comments)
             return {"result": "success"}, 200
         except Exception as e:
-            logger.error(f"Error handling failed event: {str(e)}")
+            logger.error(f"Error handling success event: {str(e)}")
             return {"result": str(e)}, 500
 
     async def failed_event(self, request):
         try:
             data = await request.get_json()
             pr_comment = data.get("message", "")
-            participant = self.__common_part(request)
+            participant = await self.__common_part(request)
             pr_payload = PullRequestPayload.from_json(participant.pr_payload)
             pr_handler = PullRequestHandler(token=participant.ssh_key, payload=pr_payload)
             pr_handler.comment_and_close_pr(final_comment=pr_comment)

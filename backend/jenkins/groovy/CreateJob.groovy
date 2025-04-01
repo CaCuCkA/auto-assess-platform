@@ -71,7 +71,8 @@ pipeline {
             steps {
                 script {
                     def testResults = sh(script: 'bash -c "source /home/Mykola/venv/bin/activate && python -m unittest discover -s /home/Mykola/test"', returnStdout: true).trim()
-                    if (testResults.contains('FAILED')) {
+                    sh "echo \${testResults}"
+                    if (testResults.contains('FAIL')) {
                         def message = "Tests failed: \${testResults}"
                         def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
                         sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
