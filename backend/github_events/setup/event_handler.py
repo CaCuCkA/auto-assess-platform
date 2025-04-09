@@ -1,5 +1,7 @@
 import aiohttp
 from quart import jsonify
+from datetime import datetime
+from collections import defaultdict
 
 from utils import get_logger
 from config import Config, PullRequestPayload
@@ -23,6 +25,7 @@ class EventHandler:
             cls._instance.__config = config
         return cls._instance
 
+
     async def webhook_event(self, request):
         try:
             repo_url = await RequestParser.get_repo_url(request)
@@ -32,12 +35,13 @@ class EventHandler:
             homework = await self.__get_homework(homework_id=participant.homework_id)
 
             await self.__trigger_jenkins_job(participant, payload, homework)
-            await self.__update_database(participant, payload)
+            await self.__update_particiapnt_payload(participant, payload)
 
             return {"result": "Homework was added to queue"}, 200
         except Exception as e:
             logger.error(f"Error handling webhook event: {str(e)}")
             return {"result": str(e)}, 500
+
 
     async def __trigger_jenkins_job(self, participant, payload, homework):
         async with aiohttp.ClientSession() as session:
@@ -54,13 +58,15 @@ class EventHandler:
                 logger.error(f"Failed to trigger job: {text}")
                 raise RuntimeError(f"Failed to trigger Jenkins job, status: {response.status}")
 
-    async def __update_database(self, participant, payload):
+
+    async def __update_particiapnt_payload(self, participant, payload):
         clauses = (HomeworkParticipant.homework_id == participant.homework_id, 
                    HomeworkParticipant.participant_id == participant.participant_id)
         fields = {"pr_payload": payload.to_json()}
         result = await self.__db_gateway.homework_participant.update(*clauses, **fields)
         if not result:
             raise RuntimeError("Failed to update participant record in database")
+
 
     async def success_event(self, request):
         try:
@@ -84,14 +90,58 @@ class EventHandler:
                 async with session.post(url, json=body, headers=headers) as response:
                     if response.status != 200:
                         return {"error": "Failed generate AI report"}, 500
-                    comments = await response.json()
-                    logger.info(comments)
-                    pr_handler = PullRequestHandler(token=participant.ssh_key, payload=pr_payload)
-                    pr_handler.add_review_comments(comments)
+                    
+                    comments_lst = await response.json()
+                    logger.info(comments_lst)
+                    comments = self.__comments_parser(comments_lst)
+                    title =  self.__generate_title(participant.full_name)
+                    if not (await self.__create_report(participant.participant_id, title, comments)):
+                        return {"error": "Failed to create report"}, 500
             return {"result": "success"}, 200
         except Exception as e:
             logger.error(f"Error handling success event: {str(e)}")
             return {"result": str(e)}, 500
+
+
+    def __comments_parser(self, comments: list, title: str = "AI Generated Code Review Comments") -> str:
+        markdown = [f"# {title}", ""]
+        grouped_by_file = defaultdict(list)
+
+        for comment in comments:
+            grouped_by_file[comment['path']].append(comment)
+
+        for path, file_comments in grouped_by_file.items():
+            markdown.append(f"## File: `{path}`\n")
+
+            for entry in file_comments:
+                markdown.append(f"### Line {entry['line']}\n")
+
+                markdown.append("```diff")
+                for line in entry.get('full_hunk', []):
+                    if line.startswith(('+', '-', ' ')):
+                        markdown.append(line)
+                    else:
+                        markdown.append(f" {line}")
+                markdown.append("```")
+
+                markdown.append(f"**Comment:** {entry['comment']}\n")
+
+        return "\n".join(markdown)
+
+
+    def __generate_title(self, title):
+        current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        return f"{title}_{current_time}"
+    
+
+    async def __create_report(self, participant_id: int, title: str, content: str) -> bool:
+        result = await self.__db_gateway.report.create(
+                participant_id=participant_id,
+                title=title,
+                content=content
+            )
+        return bool(result)
+
 
     async def failed_event(self, request):
         try:

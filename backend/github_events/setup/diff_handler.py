@@ -41,7 +41,7 @@ class DiffHandler:
             'path': file.path,
             'hunks': [{
                 'header': f"@@ -{hunk.source_start},{hunk.source_length} + {hunk.target_start},{hunk.target_length} @@",
-                'lines': [line.value for line in hunk]
+                'lines': [f"{line.line_type}{line.value}" for line in hunk]
             } for hunk in file]
         } for file in patch_set]
 

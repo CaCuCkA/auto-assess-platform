@@ -5,8 +5,11 @@ from unidiff import Hunk
 from unidiff.patch import Line
 
 from .ai_manager import AIManager
+from utils import get_logger
 from config import PullRequestPayload
 from .numbered_hunk import NumberedHunk
+
+logger = get_logger(__name__)
 
 
 class CodeReviewer:
@@ -48,12 +51,13 @@ class CodeReviewer:
     def __create_hunk(self, hunk_lines: List[str], source_start, target_start, source_length, target_length) -> Hunk:
         hunk = NumberedHunk(src_start=source_start, tgt_start=target_start, src_len=source_length, tgt_len=target_length)
         for line_str in hunk_lines:
-            line = Line(value=line_str[1:], line_type=line_str[0])
-            if line.line_type not in ('+', '-'):
-                line.line_type = " "
-            hunk.append(line)       
+            line_type = line_str[0]
+            if line_type not in ('+', '-', ' '):
+                line_type = ' '
+            line = Line(value=line_str[1:], line_type=line_type)
+            hunk.append(line)     
 
-        return hunk
+        return hunk 
 
 
     async def __get_ai_review(self, file_path: str, hunk: Hunk, pr_details: PullRequestPayload) -> List[Dict[str, str]]:
@@ -68,13 +72,22 @@ class CodeReviewer:
         try:
             line_number = int(response.get("lineNumber", 0))
             side = response.get("side", "").upper()
+
             if side and hunk.source_start <= line_number < hunk.source_start + hunk.source_length or hunk.target_start <= line_number < hunk.target_start + hunk.target_length:
+                added_lines = [line.value.rstrip('\n') for line in hunk if line.is_added]
+                removed_lines = [line.value.rstrip('\n') for line in hunk if line.is_removed]
+
+                full_hunk = [f"{line.line_type}{line.value.rstrip()}" for line in hunk]
+
                 return {
-                    "body": response["reviewComment"],
+                    "comment": response["reviewComment"],
+                    "added": added_lines,
+                    "removed": removed_lines,
+                    "full_hunk": full_hunk,
                     "path": file_path.strip(),
                     "line": line_number,
-                    "side": side,
                 }
         except (KeyError, TypeError, ValueError):
             pass
         return None
+
