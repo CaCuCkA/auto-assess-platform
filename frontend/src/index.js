@@ -6,7 +6,7 @@ const Handlebars = require('handlebars');
 
 require('dotenv').config({
     override: true,
-    path: path.join(__dirname, '../../.env')
+    path: path.join(__dirname, '../.env')
 });
 
 const authRoutes = require("./routes/authRoutes");

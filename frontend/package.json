@@ -12,8 +12,8 @@
     "pg": "^8.13.2"
   },
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node frontend/src/index.js",
+    "dev": "nodemon frontend/src/index.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
