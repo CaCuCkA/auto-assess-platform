@@ -49,3 +49,15 @@ class BaseRepo(ABC):
             await self.session.rollback()
             logger.error(f"Failed to update: {e}")
             return None 
+        
+    async def create(self, **data) -> Any:
+        try:
+            obj = self.class_type(**data)
+            self.session.add(obj)
+            await self.session.commit()
+            await self.session.refresh(obj)
+            return obj
+        except SQLAlchemyError as e:
+            await self.session.rollback()
+            logger.error(f"Failed to create record: {e}")
+            return None
