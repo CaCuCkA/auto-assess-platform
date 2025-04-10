@@ -1,4 +1,5 @@
 from quart import Quart, g, current_app, jsonify
+from quart_cors import cors
 
 from github_events import github_bp
 from jenkins import jenkins_bp
@@ -7,7 +8,8 @@ from config import load_config
 from utils import setup_logging, get_logger
 from database import create_engine, create_session_pool, DatabaseGateway
 
-app = Quart(__name__)
+
+app = cors(Quart(__name__), allow_origin="http://34.116.152.32:3000")
 
 config = load_config("../.env")
 app.config.update({
@@ -24,8 +26,8 @@ logger = get_logger(__name__)
 @app.before_serving
 async def init_resources():
     setup_logging()
-    
     logger.info("Initializing DB resources...")
+
     engine = create_engine(app.config["CONFIG"].db)
     app.config["SESSION_POOL"] = await create_session_pool(engine)
 
@@ -44,7 +46,7 @@ async def cleanup_db_gateway(response):
         await db_gateway.session.close()
     return response
 
-
 if __name__ == "__main__":
     port = config.backend.port
+    
     app.run(host="0.0.0.0", debug=True, port=port)
