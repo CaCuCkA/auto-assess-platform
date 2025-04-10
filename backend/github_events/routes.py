@@ -27,3 +27,10 @@ async def failed_build_handler():
     event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])
     result, code = await event_handler.failed_event(request)
     return jsonify(result), code
+
+
+@github_bp.route("/submit-report", methods=["POST"])
+async def submit_report():
+    event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])
+    result, code = await event_handler.submit_report(request)
+    return jsonify(result), code

@@ -156,6 +156,7 @@ class EventHandler:
             logger.error(f"Error handling failed event: {str(e)}")
             return {"result": str(e)}, 500
     
+
     async def __common_part(self, request):
         participant_id = int(request.args.get("id", 0))
         homework_id = int(request.args.get("homework_id", 0))
@@ -168,6 +169,25 @@ class EventHandler:
             return jsonify({"error": "Participant not found"}), 404
 
         return participant
+    
+
+    async def submit_report(self, request):
+        try:
+            report_id = int(request.args.get("id", 0))
+            participant_id = int(request.args.get("participant_id", 0))
+            if not participant_id or not report_id:
+                raise ValueError({"error": "Missing participant_id or report_id"})
+            
+            report = await self.__get_report(report_id=report_id, participant_id=participant_id)
+            participant = await self.__get_participant(participant_id=participant_id)
+
+            pr_payload = PullRequestPayload.from_json(participant.pr_payload)
+            pr_handler = PullRequestHandler(token=participant.ssh_key, payload=pr_payload)
+            pr_handler.add_review_report(report.content)
+            return {"result": "success"}, 200
+        except Exception as e:
+            logger.error(f"Failed to submit report: {str(e)}")
+            return {"result": str(e)}, 500
 
          
     async def __get_participant(self, **filter):
@@ -177,10 +197,19 @@ class EventHandler:
             raise ValueError(f"Participant not found for filter: {filter}")
         return participant
 
+
     async def __get_homework(self, **filter):
         homework = await self.__db_gateway.homework.get_single(**filter)
         if not homework:
             logger.error(f"Homework not found for filter: {filter}")
             raise ValueError(f"Homework not found for filter: {filter}")
         return homework
+
+
+    async def __get_report(self, **filter):
+        report = await self.__db_gateway.report.get_single(**filter)
+        if not report:
+            logger.error(f"Report not found for filter: {filter}")
+            raise ValueError(f"Report not found for filter: {filter}")
+        return report 
     
