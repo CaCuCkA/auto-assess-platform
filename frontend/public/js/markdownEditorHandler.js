@@ -117,26 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             
             if (data.success) {
-                
-                const params = new URLSearchParams(window.location.search);
-                const participantId = params.get("id");
-                const response = await fetch(`http://34.116.152.32:5000/github/submit-report?id=${reportId}&participant_id=2`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" }
-                });
-                
-                const statusCode = response.status;
-
-                if (statusCode == 200) {
-                    let redirectUrl = "/";
+                let redirectUrl = "/";
     
-                    if (homeworkId !== null && homeworkId !== undefined && homeworkId.trim() !== "") {
-                        redirectUrl = `/homework/${homeworkId}`;
-                    }
-            
-                    window.location.href = redirectUrl;
-                    return;
+                if (homeworkId !== null && homeworkId !== undefined && homeworkId.trim() !== "") {
+                    redirectUrl = `/homework/${homeworkId}`;
                 }
+        
+                window.location.href = redirectUrl;
+                return;
             } else {
                 displayNotification("error", "Issue!", "Failed to submit report!");
             }

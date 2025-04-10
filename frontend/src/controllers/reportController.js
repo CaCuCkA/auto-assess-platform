@@ -1,3 +1,4 @@
+const axios = require('axios');
 const Report = require("../models/Report");
 
  
@@ -84,7 +85,6 @@ exports.renderReportEditorPage = async (req, res) => {
          });
 };
 
-
 exports.saveMardownEditorChanges = async (req, res) => {
     try {
         const participantId = req.session.participantId;
@@ -109,28 +109,53 @@ exports.saveMardownEditorChanges = async (req, res) => {
     }    
 }
 
-
 exports.submitReport = async (req, res) => {
     try {
         const participantId = req.session.participantId;
         const { id } = req.params;
         const { content } = req.body;
-        console.log("participantId: ", participantId);
-        const updatedReport = await Report.update({
+
+        if (!participantId) {
+            return res.status(401).json({ success: false, error: 'unauthorized' });
+        }
+
+        const updatedRowsContent = await Report.update({
             reportId: id,
-            participantId: participantId,
-            content: content,
-            is_submited: true,
+            participantId,
+            content
         });
 
-        if (updatedReport) {
-            res.json({ success: true });
-        } else {
-            res.status(404).json({ success: false, error: "not_found" });
+        if (updatedRowsContent === 0) {
+            return res.status(404).json({ success: false, error: 'report_not_found' });
         }
+
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalRes = await axios.post(`${externalApiUrl}/github/submit-report`, null, {
+            params: {
+                id,
+                participant_id: participantId
+            }
+        });
+
+        if (externalRes.status !== 200) {
+            console.warn("External API failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
+        const updatedRowsSubmit = await Report.update({
+            reportId: id,
+            participantId,
+            is_submited: true, 
+        });
+
+        if (updatedRowsSubmit === 0) {
+            return res.status(404).json({ success: false, error: 'submit_failed' });
+        }
+
+        return res.json({ success: true });
+
+    } catch (error) {
+        console.error("Error in submitReport:", error.message || error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-    catch (error) {
-        console.error("Error updating report:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }    
-}
+};

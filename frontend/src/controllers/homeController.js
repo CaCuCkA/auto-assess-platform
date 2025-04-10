@@ -1,3 +1,4 @@
+const axios = require('axios');
 const Report = require("../models/Report");
 const Homework = require("../models/Homework");
 const { getRandomCardColor } = require("../util/colorGenerator")
@@ -41,12 +42,37 @@ exports.addHomework = async (req, res) => {
     try {
         const { title } = req.body;
         const adminId = req.session.userId;
+        console.log("adminId=", adminId);
+        const newHomework = await Homework.create(title.trim(), getRandomCardColor(), adminId);
 
-        const newHomework = await Homework.create(title, getRandomCardColor(), adminId);
-        res.json({ success: true, message: "Homework added successfully", newHomework });
+        if (!newHomework || !newHomework.homework_id) {
+            return res.status(502).json({ success: false, error: 'Failed to add homework' });
+        }
+
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-job`, null, {
+            params: {
+                id: newHomework.homework_id,
+                admin_id: adminId
+            }
+        });
+
+        if (externalRes.status !== 200) {
+            await Homework.delete(newHomework.homework_id, adminId);
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Homework added successfully',
+            newHomework
+        });
+
     } catch (error) {
-        console.error("Error adding homework:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error in addHomework:", error.message || error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
@@ -56,9 +82,25 @@ exports.editHomework = async (req, res) => {
         const { title } = req.body;
         const adminId = req.session.userId;
 
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-job`, null, {
+            params: {
+                id,
+                admin_id: adminId
+            },
+            body : {
+                new_name: title
+            }
+        });
+
+        if (externalRes.status !== 200) {
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
         const updatedHomework = await Homework.update(title, id, adminId);
         if (updatedHomework) {
-            res.json({ success: true });
+            res.json({ success: true, message: "Homework updated successfully" });
         } else {
             res.status(404).json({ success: false, error: "not_found" });
         }
@@ -73,7 +115,21 @@ exports.deleteHomework = async (req, res) => {
         const adminId = req.session.userId;
         const { id } = req.params
 
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/delete-job`, null, {
+            params: {
+                id,
+                admin_id: adminId
+            }
+        });
+
+        if (externalRes.status !== 200) {
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
         const deletedHomework = await Homework.delete(id, adminId);
+
         if (deletedHomework) {
             res.json({ success: true, message: "Homework deleted successfully" });
         } else {
@@ -85,5 +141,4 @@ exports.deleteHomework = async (req, res) => {
     }
 };
 
-// Render error page
 exports.renderError = (req, res) => res.render("error");
