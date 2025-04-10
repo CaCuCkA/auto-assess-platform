@@ -30,12 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const hashContent = (content) => {
-        return crypto.subtle.digest("SHA-256", new TextEncoder().encode(content))
-            .then(hashBuffer => {
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-            });
-    };
+        const hash = CryptoJS.SHA256(content);
+        return hash.toString(CryptoJS.enc.Hex);
+    };    
 
     let easyMDE;
     let lastHash;
@@ -120,14 +117,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             
             if (data.success) {
-                let redirectUrl = "/";
+                
+                const params = new URLSearchParams(window.location.search);
+                const participantId = params.get("id");
+                const response = await fetch(`http://34.116.152.32:5000/github/submit-report?id=${reportId}&participant_id=2`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                
+                const statusCode = response.status;
+
+                if (statusCode == 200) {
+                    let redirectUrl = "/";
     
-                if (homeworkId !== null && homeworkId !== undefined && homeworkId.trim() !== "") {
-                    redirectUrl = `/homework/${homeworkId}`;
+                    if (homeworkId !== null && homeworkId !== undefined && homeworkId.trim() !== "") {
+                        redirectUrl = `/homework/${homeworkId}`;
+                    }
+            
+                    window.location.href = redirectUrl;
+                    return;
                 }
-        
-                window.location.href = redirectUrl;
-                return;
             } else {
                 displayNotification("error", "Issue!", "Failed to submit report!");
             }

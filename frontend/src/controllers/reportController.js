@@ -115,7 +115,7 @@ exports.submitReport = async (req, res) => {
         const participantId = req.session.participantId;
         const { id } = req.params;
         const { content } = req.body;
-
+        console.log("participantId: ", participantId);
         const updatedReport = await Report.update({
             reportId: id,
             participantId: participantId,
