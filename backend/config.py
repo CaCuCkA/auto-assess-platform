@@ -58,8 +58,13 @@ class Gemini:
 
 @dataclass
 class Backend:
+    ip: str
     port: int
 
+@dataclass
+class Frontend:
+    ip: str
+    port: int
 
 @dataclass
 class Config:
@@ -67,6 +72,7 @@ class Config:
     jenkins: Jenkins
     gemini: Gemini
     backend: Backend
+    frontend: Frontend
     env: Env = field(default_factory=Env)
 
     @classmethod
@@ -92,7 +98,12 @@ class Config:
                 model=env.str("GEMINI_MODEL")
             ),
             backend=Backend(
+                ip = env.str("BACKEND_IP"),
                 port=env.int("BACKEND_PORT")
+            ),
+            frontend=Frontend(
+                ip = env.str("FRONTEND_IP"),
+                port=env.int("FRONTEND_PORT")
             ),
             env=env
         )

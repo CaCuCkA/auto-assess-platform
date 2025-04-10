@@ -9,9 +9,9 @@ from utils import setup_logging, get_logger
 from database import create_engine, create_session_pool, DatabaseGateway
 
 
-app = cors(Quart(__name__), allow_origin="http://34.116.152.32:3000")
-
 config = load_config("../.env")
+
+app = cors(Quart(__name__), allow_origin=f"http://{config.frontend.ip}:{config.frontend.port}")
 app.config.update({
     "CONFIG": config,
     "SESSION_POOL": None
@@ -47,6 +47,6 @@ async def cleanup_db_gateway(response):
     return response
 
 if __name__ == "__main__":
-    port = config.backend.port
-    
+    port = config.backend.port or 5000
     app.run(host="0.0.0.0", debug=True, port=port)
+  
