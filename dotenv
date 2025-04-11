@@ -1,0 +1,26 @@
+# 🔗 Database Configuration
+POSTGRES_USER="postgres_user"
+POSTGRES_PASSWORD="postgres_password"
+POSTGRES_DB="postgres_db"
+DB_HOST="db_host"
+DB_PORT=5432
+
+# 🔐 Session
+SESSION_SECRET="frontend-session-secret"
+
+# ⚙️ Jenkins Integration
+JENKINS_URL="jenkins-url"
+JENKINS_USER="jenkins-user"
+JENKINS_API_TOKEN="jenkins-api-token"
+
+# 🤖 Gemini API
+GEMINI_API_TOKEN="gemini-token"
+GEMINI_MODEL="gemini-api-modal"
+
+# 🌐 Frontend
+FRONTEND_IP="frontend-ip"
+FRONTEND_PORT=3000
+
+# 🛠️ Backend
+BACKEND_IP="backend-ip"
+BACKEND_PORT=5000
