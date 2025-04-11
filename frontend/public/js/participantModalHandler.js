@@ -93,11 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const isValidUrl = url => /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(url);
 
-    const isValidSshKey = sshKey => {
-        const match = sshKey.match(/^(ssh-(rsa|dss|ecdsa|ed25519)) ([A-Za-z0-9+/=]+)( .*)?$/);
-        return match && atob(match[3]).length > 0;
+    const isValidGithubPat = (token) => {
+            return /^github_pat_[A-Za-z0-9_]{20,}_[A-Za-z0-9_]{40,}$/.test(token);
     };
-
+    
     // notifcation modal 
 
     const hash = window.location.hash;
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!fullName.value && !repoUrl.value && !sshKey.value) return showError("sshKey", "You should change at least one field");
         
         if (repoUrl.value && !isValidUrl(repoUrl.value)) return showError("repoUrl", "Invalid URL format.");
-        if (sshKey.value && !isValidSshKey(sshKey.value)) return showError("sshKey", "Invalid SSH Key format.");
+        if (sshKey.value && !isValidGithubPat(sshKey.value)) return showError("sshKey", "Invalid SSH Key format.");
 
         const response = await fetch("/homework/check-duplicates", {
             method: "POST",
@@ -259,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (!name || !repo || !key) return showError("fileInput", "Full Name, Repo URL or SSH Key cannot be empty.");
                     
-                        if (!isValidSshKey(key)) return showError("fileInput", `Invalid SSH Key: ${key}`);
+                        if (!isValidGithubPat(key)) return showError("fileInput", `Invalid SSH Key: ${key}`);
                         if (!isValidUrl(repo)) return showError("fileInput", `Invalid Repo URL: ${repo}`);
               
                         if (repoUrlsSet.has(repo)) return showError("fileInput", `Duplicate repo URL in CSV: ${repo}`, "#880808");
@@ -295,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const errors = {
             fullName: !trimmedFullName && "Full Name is required.",
             repoUrl: !trimmedRepoUrl ? "Repository URL is required." : !isValidUrl(trimmedRepoUrl) && "Invalid URL format.",
-            sshKey: !trimmedSshKey ? "SSH Key is required." : !isValidSshKey(trimmedSshKey) && "Invalid SSH Key format."
+            sshKey: !trimmedSshKey ? "SSH Key is required." : !isValidGithubPat(trimmedSshKey) && "Invalid SSH Key format."
         };
     
         for (const [key, message] of Object.entries(errors)) {

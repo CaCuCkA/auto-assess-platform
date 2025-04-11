@@ -1,3 +1,4 @@
+const axios = require('axios');
 const Test = require("../models/Test");
 const Report = require("../models/Report");
 const Homework = require("../models/Homework");
@@ -51,12 +52,32 @@ exports.addHomeworkParticipant = async (req, res) => {
 
         const newHomeworkParticipant = await HomeworkParticipant.add(participants, homeworkId);
 
+        if (!newHomeworkParticipant || !newHomeworkParticipant.participant_id) {
+            return res.status(502).json({ success: false, error: 'Failed to add homework' });
+        }
+
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+                
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-credential`, null, {
+            params: {
+                id: newHomeworkParticipant.participant_id,
+                homework_id: homeworkId
+            }
+        });
+
+        if (externalRes.status !== 200) {
+            await HomeworkParticipant.delete(newHomeworkParticipant.participant_id, homeworkId);
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
         return res.status(201).json({
             success: true,
             message: "Homework participant added successfully",
             data: newHomeworkParticipant
         });
     } catch (error) {
+        await HomeworkParticipant.delete(newHomeworkParticipant.participant_id, homeworkId);
         console.error("Error adding homework participant:", error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -70,10 +91,12 @@ exports.editHomeworkParticipant = async (req, res) => {
         const { homeworkId } = req.session;
         const updateValues = [];
         const updatedFields = [];
+        const payload = {};
         
         if (fullName) {
             updateValues.push(`full_name = '${fullName.replace("'", "''")}'`);
             updatedFields.push("full name");
+            payload.full_name = fullName;
         }
         if (repoUrl) {
             updateValues.push(`repo_url = '${repoUrl.replace("'", "''")}'`);
@@ -82,9 +105,27 @@ exports.editHomeworkParticipant = async (req, res) => {
         if (sshKey) {
             updateValues.push(`ssh_key = '${sshKey.replace("'", "''")}'`);
             updatedFields.push("SSH key");
+            payload.ssh_key = sshKey;
         }
 
         const setClause = updateValues.join(", ");
+
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+                
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-credential`, 
+            payload,
+            {
+                params: {
+                    id,
+                    homework_id: homeworkId
+                }
+            }
+        );
+
+        if (externalRes.status !== 200) {
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
 
         const updatedHomework = await HomeworkParticipant.update(setClause, id, homeworkId);
         if (updatedHomework) {
@@ -98,6 +139,7 @@ exports.editHomeworkParticipant = async (req, res) => {
     }
 };
 
+
 exports.deleteHomeworkParticipant = async (req, res) => {
     const homeworkId = req.session.homeworkId;
     const { id } = req.params;
@@ -107,6 +149,19 @@ exports.deleteHomeworkParticipant = async (req, res) => {
     }
 
     try {
+        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalRes = await axios.post(`${externalApiUrl}/jenkins/delete-credential`, null, {
+            params: {
+                id,
+                homework_id: homeworkId
+            }
+        });
+        
+        if (externalRes.status !== 200) {
+            console.warn("External API call failed:", externalRes.status);
+            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        }
+
         const participant = await HomeworkParticipant.delete(id, homeworkId);
 
         if (!participant) {

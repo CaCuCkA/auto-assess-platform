@@ -83,15 +83,16 @@ exports.editHomework = async (req, res) => {
         const adminId = req.session.userId;
 
         const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
-        const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-job`, null, {
-            params: {
-                id,
-                admin_id: adminId
-            },
-            body : {
-                new_name: title
+        const externalRes = await axios.post(
+            `${externalApiUrl}/jenkins/update-job`, 
+            { new_name: title },
+            {
+                params: {
+                    id,
+                    admin_id: adminId
+                }
             }
-        });
+        );
 
         if (externalRes.status !== 200) {
             console.warn("External API call failed:", externalRes.status);
