@@ -1,12 +1,11 @@
 # frontend/Dockerfile
 FROM node:16
 
-WORKDIR /app
+WORKDIR /frontend
 
-COPY frontend/package.json frontend/package-lock.json ./
+COPY frontend ./
 RUN npm install
 
-COPY . .
 COPY .env .env
 
 EXPOSE 3000

@@ -1,17 +1,52 @@
 version: '3.8'
 
 services:
+  postgres:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: backend_service
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+    container_name: frontend_service
     ports:
       - "3000:3000"
     env_file:
       - .env
+    depends_on:
+      - postgres
+      - backend
     networks:
-      - app-network
-networks:
-  app-network:
-    driver: bridge
+      - app_network
 
+networks:
+  app_network:
+    driver: bridge
