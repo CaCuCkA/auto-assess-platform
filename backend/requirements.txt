@@ -2,6 +2,7 @@
 aiohttp
 aiojenkins
 quart>=0.19,<1.0
+quart_cors
 
 # Logging
 betterlogging
