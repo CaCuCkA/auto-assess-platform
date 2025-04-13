@@ -49,6 +49,7 @@ class Jenkins:
     host: str
     port: int
     user: str
+    sharepoint_path: str
     token: Optional[str] = None
 
 
@@ -62,6 +63,7 @@ class Gemini:
 class Backend:
     host: str
     port: int
+    sharepoint_path: str
 
 
 @dataclass
@@ -96,6 +98,7 @@ class Config:
                 host=env.str("JENKINS_HOST"),
                 port=env.int("JENKINS_PORT"),
                 user=env.str("JENKINS_USER"),
+                sharepoint_path=env.str("JENKINS_SHAREPOINT_PATH"),
                 token=env.str("JENKINS_TOKEN", default=None)
             ),
             gemini=Gemini(
@@ -104,7 +107,8 @@ class Config:
             ),
             backend=Backend(
                 host=env.str("BACKEND_HOST"),
-                port=env.int("BACKEND_PORT")
+                port=env.int("BACKEND_PORT"),
+                sharepoint_path=env.str("BACKEND_SHAREPOINT_PATH")
             ),
             frontend=Frontend(
                 host=env.str("FRONTEND_HOST"),

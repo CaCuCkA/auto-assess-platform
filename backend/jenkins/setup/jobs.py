@@ -3,6 +3,7 @@ import hashlib
 import aiohttp
 import aiofiles
 import aiojenkins
+from pathlib import Path
 from typing import Tuple
 from jinja2 import Template
 
@@ -14,20 +15,24 @@ logger = get_logger(__name__)
 class Jobs(Base):
     __SCRIPT_PATH = "jenkins/groovy/CreateJob.groovy"
 
+    
     def __init__(self, url, user, token):
         super().__init__(url, user, token)
 
+    
     @staticmethod
     def __safe_job_name(name: str) -> str:
         title_hash = hashlib.sha256(name.encode()).hexdigest()[:12]
         return f"job-{title_hash}"
     
+
     async def __load_template_and_render(self, name: str) -> str:
         async with aiofiles.open(self.__SCRIPT_PATH, mode="r") as f:
             content = await f.read()
 
         template = Template(content)
         return template.render(job_name=Jobs.__safe_job_name(name))
+
     
     async def create(self, name: str):
         script = await self.__load_template_and_render(name)
@@ -89,6 +94,7 @@ class Jobs(Base):
             except Exception as e:
                 logger.error(f"Unexpected error during job rename: {e}")
                 return f"Unexpected error during job rename: {e}", 500
+        
         
     async def trigger(self, name: str, **params)  -> Tuple[str, int]:
         try:

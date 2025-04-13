@@ -1,4 +1,4 @@
-from .setup import Credentials, Jobs
+from .setup import Credentials, Jobs, FolderManager
 from utils import get_logger
 
 from typing import Type, TypeVar
@@ -140,6 +140,9 @@ async def create_homework_job():
             admin_id=admin_id, homework_id=homework_id
         )
 
+        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
+        folder_manager.create(homework.title)
+
         jobs = get_jenkins_instance(Jobs)
         result, code = await jobs.create(homework.title)
 
@@ -169,6 +172,12 @@ async def delete_homework_job():
             logger.warning(f"Homwork not found for {homework_id=} and {admin_id=}")
             return jsonify({"error": "Homework not found"}), 404
 
+        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
+        is_deleted = folder_manager.delete(homework.title)
+
+        if not is_deleted:
+            logger.warning("Failed to delete homework test folder")
+            return jsonify({"error": "Failed to delete homework test folder"}), 400
 
         participants = await g.db_gateway.homework_participant.get_all(
             homework_id=homework_id
@@ -223,6 +232,13 @@ async def update_homework_job():
 
         new_name = data.get("new_name", homework.title)
 
+        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
+        is_renamed = folder_manager.rename(old_name=homework.title, new_name=new_name)
+
+        if not is_renamed:
+            logger.warning("Failed to rename homework test folder")
+            return jsonify({"error": "Failed to rename homework test folder"}), 400
+
         jobs = get_jenkins_instance(Jobs)
         result, code = await jobs.update(homework.title, new_name)
         return jsonify({"result": result}), code
@@ -232,6 +248,7 @@ async def update_homework_job():
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins job")
         return jsonify({"error": str(e)}), 500
+
 
 @jenkins_bp.route("/trigger-job", methods=["POST"])
 async def trigger_homework_job():
@@ -270,4 +287,3 @@ async def trigger_homework_job():
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins job")
         return jsonify({"error": str(e)}), 500
-        

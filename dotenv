@@ -12,6 +12,7 @@ JENKINS_AGENT_PORT=50000
 JENKINS_USER="jenkins_user"
 JENKINS_PASSWORD="jenkins_password"
 JENKINS_API_TOKEN="jenkins_api_token"
+JENKINS_SHAREPOINT_PATH="/var/jenkins_home/sharepoint/tests"
 
 # 🤖 Gemini API
 GEMINI_API_TOKEN="gemini_token"
@@ -25,3 +26,4 @@ FRONTEND_PORT=3000
 # 🛠️ Backend
 BACKEND_HOST="backend_host"
 BACKEND_PORT=5000
+BACKEND_SHAREPOINT_PATH="/backend/sharepoint/tests"

@@ -37,7 +37,7 @@ services:
     networks:
       - app_network
     volumes:
-      - sharepoint:/backend/sharepoint 
+      - sharepoint:${BACKEND_SHAREPOINT_PATH} 
 
   frontend:
     build:
@@ -68,7 +68,7 @@ services:
       BACKEND_HOST: ${BACKEND_HOST}
       BACKEND_PORT: ${BACKEND_PORT}
     volumes:
-      - sharepoint:/var/jenkins_home/sharepoint
+      - sharepoint:${JENKINS_SHAREPOINT_PATH}
     depends_on:
       - backend
     networks:
