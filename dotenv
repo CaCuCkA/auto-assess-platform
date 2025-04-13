@@ -8,6 +8,7 @@ DB_PORT=5432
 # ⚙️ Jenkins Integration
 JENKINS_HOST="jenkins_host"
 JENKINS_PORT=8080
+JENKINS_AGENT_PORT=50000
 JENKINS_USER="jenkins_user"
 JENKINS_PASSWORD="jenkins_password"
 JENKINS_API_TOKEN="jenkins_api_token"
