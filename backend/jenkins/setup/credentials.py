@@ -1,6 +1,6 @@
 import json
 import aiohttp
-from typing import Tuple
+from typing import Tuple, List
 
 from .base import Base
 
@@ -74,5 +74,18 @@ class Credentials(Base):
 
         except Exception as e:
             return f"Unexpected error during credential delete: {e}", 500
+
+
+    async def delete_multiple(self, ids: List[str]) -> Tuple[dict, int]:
+        results = {}
+
+        for credential_id in ids:
+            msg, status = await self.delete(credential_id)
+            results[credential_id] = {
+                "status": status,
+                "message": msg
+            }
+
+        overall_status = 200 if all(r["status"] == 200 for r in results.values()) else 207
+        return results, overall_status
         
-    

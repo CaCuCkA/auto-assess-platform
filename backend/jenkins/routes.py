@@ -165,9 +165,34 @@ async def delete_homework_job():
             admin_id=admin_id, homework_id=homework_id
         )
 
+        if not homework:
+            logger.warning(f"Homwork not found for {homework_id=} and {admin_id=}")
+            return jsonify({"error": "Homework not found"}), 404
+
+
+        participants = await g.db_gateway.homework_participant.get_all(
+            homework_id=homework_id
+        )
+
+        if not participants:
+            logger.warning(f"Participant not found for homework {homework_id}")
+            return jsonify({"error": "Participant not found"}), 404
+
+        cred_ids = [
+            build_credential_id(p.full_name, p.participant_id, homework_id)
+            for p in participants
+        ]
+        credential = get_jenkins_instance(Credentials)
+        result, code = await credential.delete_multiple(cred_ids)
+
+        logger.info(result)
+
+        if code != 200:
+            logger.warning(f"Participant not found for homework {homework_id}")
+            return jsonify({"error": "Failed to delete all participants"}), 400
+
         jobs = get_jenkins_instance(Jobs)
         result, code = await jobs.delete(homework.title)
-
         return jsonify({"result": result}), code
     except ValueError:
         logger.exception("Invalid input types for admin_id or homework_id")
@@ -245,3 +270,4 @@ async def trigger_homework_job():
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins job")
         return jsonify({"error": str(e)}), 500
+        
