@@ -5,7 +5,7 @@ from github_events import github_bp
 from jenkins import jenkins_bp
 from ai_report import ai_bp
 from config import load_config
-from utils import setup_logging, get_logger, jenkins_token_bp, is_allowed_origin
+from utils import setup_logging, get_logger, jenkins_token_bp
 from database import create_engine, create_session_pool, DatabaseGateway
 
 
