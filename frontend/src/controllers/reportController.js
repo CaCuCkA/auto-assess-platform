@@ -129,7 +129,7 @@ exports.submitReport = async (req, res) => {
             return res.status(404).json({ success: false, error: 'report_not_found' });
         }
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         const externalRes = await axios.post(`${externalApiUrl}/github/submit-report`, null, {
             params: {
                 id,

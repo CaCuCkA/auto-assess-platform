@@ -45,9 +45,10 @@ class DbConfig:
 
 @dataclass
 class Jenkins:
-    url: str
+    host: str
+    port: int
     user: str
-    token: str
+    token: str = None
 
 
 @dataclass
@@ -58,13 +59,15 @@ class Gemini:
 
 @dataclass
 class Backend:
-    ip: str
+    host: str
     port: int
+
 
 @dataclass
 class Frontend:
-    ip: str
+    host: str
     port: int
+
 
 @dataclass
 class Config:
@@ -89,20 +92,20 @@ class Config:
                 port=env.int("DB_PORT")
             ),
             jenkins=Jenkins(
-                url=env.str("JENKINS_URL"),
+                host=env.str("JENKINS_HOST"),
+                port=env.int("JENKINS_PORT"),
                 user=env.str("JENKINS_USER"),
-                token=env.str("JENKINS_API_TOKEN")
             ),
             gemini=Gemini(
                 token=env.str("GEMINI_API_TOKEN"),
                 model=env.str("GEMINI_MODEL")
             ),
             backend=Backend(
-                ip = env.str("BACKEND_IP"),
+                host=env.str("BACKEND_HOST"),
                 port=env.int("BACKEND_PORT")
             ),
             frontend=Frontend(
-                ip = env.str("FRONTEND_IP"),
+                host=env.str("FRONTEND_HOST"),
                 port=env.int("FRONTEND_PORT")
             ),
             env=env

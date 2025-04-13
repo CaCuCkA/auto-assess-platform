@@ -5,22 +5,22 @@ POSTGRES_DB="postgres_db"
 DB_HOST="db_host"
 DB_PORT=5432
 
-# 🔐 Session
-SESSION_SECRET="frontend-session-secret"
-
 # ⚙️ Jenkins Integration
-JENKINS_URL="jenkins-url"
-JENKINS_USER="jenkins-user"
-JENKINS_API_TOKEN="jenkins-api-token"
+JENKINS_HOST="jenkins_host"
+JENKINS_PORT=8080
+JENKINS_USER="jenkins_user"
+JENKINS_PASSWORD="jenkins_password"
+JENKINS_API_TOKEN="jenkins_api_token"
 
 # 🤖 Gemini API
-GEMINI_API_TOKEN="gemini-token"
-GEMINI_MODEL="gemini-api-modal"
+GEMINI_API_TOKEN="gemini_token"
+GEMINI_MODEL="gemini_api_modal"
 
 # 🌐 Frontend
-FRONTEND_IP="frontend-ip"
+SESSION_SECRET="frontend_session_secret"
+FRONTEND_HOST="frontend_host"
 FRONTEND_PORT=3000
 
 # 🛠️ Backend
-BACKEND_IP="backend-ip"
+BACKEND_HOST="backend_host"
 BACKEND_PORT=5000

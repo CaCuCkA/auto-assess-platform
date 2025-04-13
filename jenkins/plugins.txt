@@ -1,0 +1,12 @@
+workflow-aggregator
+git                            
+github                         
+github-branch-source
+credentials-binding
+ssh-slaves
+matrix-auth
+pam-auth
+mailer      
+timestamper
+cloudbees-folder
+antisamy-markup-formatter

@@ -11,7 +11,7 @@ from database import create_engine, create_session_pool, DatabaseGateway
 
 config = load_config("../.env")
 
-app = cors(Quart(__name__), allow_origin=f"http://{config.frontend.ip}:{config.frontend.port}")
+app = cors(Quart(__name__), allow_origin=f"http://{config.frontend.host}:{config.frontend.port}")
 app.config.update({
     "CONFIG": config,
     "SESSION_POOL": None

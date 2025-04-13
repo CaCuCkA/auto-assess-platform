@@ -56,7 +56,7 @@ exports.addHomeworkParticipant = async (req, res) => {
             return res.status(502).json({ success: false, error: 'Failed to add homework' });
         }
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
                 
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-credential`, null, {
             params: {
@@ -110,7 +110,7 @@ exports.editHomeworkParticipant = async (req, res) => {
 
         const setClause = updateValues.join(", ");
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
                 
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-credential`, 
             payload,
@@ -149,7 +149,7 @@ exports.deleteHomeworkParticipant = async (req, res) => {
     }
 
     try {
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/delete-credential`, null, {
             params: {
                 id,

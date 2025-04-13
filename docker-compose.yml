@@ -17,6 +17,11 @@ services:
       - .env
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -31,6 +36,8 @@ services:
       - postgres
     networks:
       - app_network
+    volumes:
+      - sharepoint:/backend/sharepoint 
 
   frontend:
     build:
@@ -46,6 +53,33 @@ services:
       - backend
     networks:
       - app_network
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: jenkins/Dockerfile
+    container_name: jenkins_server
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      JENKINS_USER: ${JENKINS_USER}
+      JENKINS_PASSWORD: ${JENKINS_PASSWORD}
+    volumes:
+      - sharepoint:/var/jenkins_home/sharepoint
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:8080/login || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  sharepoint:
 
 networks:
   app_network:

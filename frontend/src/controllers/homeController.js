@@ -49,7 +49,7 @@ exports.addHomework = async (req, res) => {
             return res.status(502).json({ success: false, error: 'Failed to add homework' });
         }
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-job`, null, {
             params: {
@@ -82,7 +82,7 @@ exports.editHomework = async (req, res) => {
         const { title } = req.body;
         const adminId = req.session.userId;
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         const externalRes = await axios.post(
             `${externalApiUrl}/jenkins/update-job`, 
             { new_name: title },
@@ -116,7 +116,7 @@ exports.deleteHomework = async (req, res) => {
         const adminId = req.session.userId;
         const { id } = req.params
 
-        const externalApiUrl = `http://${process.env.BACKEND_IP}:${process.env.BACKEND_PORT}`;
+        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/delete-job`, null, {
             params: {
                 id,

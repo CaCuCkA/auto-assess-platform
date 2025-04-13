@@ -19,7 +19,7 @@ def build_credential_id(full_name: str, participant_id: int, homework_id: int) -
 
 def get_jenkins_instance(cls: Type[T]) -> T:
     config = current_app.config["CONFIG"].jenkins
-    return cls(config.url, config.user, config.token)
+    return cls(f"http://{config.host}:{config.port}", config.user, config.token)
 
 
 @jenkins_bp.route("/add-credential", methods=["POST"])
