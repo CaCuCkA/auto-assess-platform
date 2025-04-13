@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 from dataclasses import dataclass, asdict, field
 from environs import Env
 from sqlalchemy.engine.url import URL
@@ -48,7 +49,7 @@ class Jenkins:
     host: str
     port: int
     user: str
-    token: str = None
+    token: Optional[str] = None
 
 
 @dataclass
@@ -95,6 +96,7 @@ class Config:
                 host=env.str("JENKINS_HOST"),
                 port=env.int("JENKINS_PORT"),
                 user=env.str("JENKINS_USER"),
+                token=env.str("JENKINS_TOKEN", default=None)
             ),
             gemini=Gemini(
                 token=env.str("GEMINI_API_TOKEN"),
@@ -110,6 +112,9 @@ class Config:
             ),
             env=env
         )
+    
+    def update_jenkins_token(self, token: str):
+        self.jenkins.token = token
 
 
 def load_config(path: str = None) -> Config:

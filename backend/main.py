@@ -5,21 +5,31 @@ from github_events import github_bp
 from jenkins import jenkins_bp
 from ai_report import ai_bp
 from config import load_config
-from utils import setup_logging, get_logger
+from utils import setup_logging, get_logger, jenkins_token_bp, is_allowed_origin
 from database import create_engine, create_session_pool, DatabaseGateway
 
 
 config = load_config("../.env")
 
-app = cors(Quart(__name__), allow_origin=f"http://{config.frontend.host}:{config.frontend.port}")
+allowed_origins = {
+    f"http://{config.frontend.host}:{config.frontend.port}",
+    f"http://{config.jenkins.host}:{config.jenkins.port}",
+}
+
+app = Quart(__name__)
+
+app = cors(app, allow_origin=allowed_origins)
+
 app.config.update({
     "CONFIG": config,
     "SESSION_POOL": None
 })
 
+app.register_blueprint(jenkins_token_bp, url_prefix="/jenkins_token")
 app.register_blueprint(jenkins_bp, url_prefix='/jenkins')
 app.register_blueprint(github_bp, url_prefix='/github')
 app.register_blueprint(ai_bp, url_prefix='/ai')
+
 
 logger = get_logger(__name__)
 
