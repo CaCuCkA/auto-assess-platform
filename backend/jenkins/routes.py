@@ -1,4 +1,4 @@
-from .setup import Credentials, Jobs, FolderManager
+from .setup import Credentials, Jobs, FSManager
 from utils import get_logger
 
 from typing import Type, TypeVar
@@ -140,8 +140,8 @@ async def create_homework_job():
             admin_id=admin_id, homework_id=homework_id
         )
 
-        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
-        folder_manager.create(homework.title)
+        tests = Tests(current_app.config["CONFIG"].backend.sharepoint_path)
+        tests.add(homework.title, is_folder=True)
 
         jobs = get_jenkins_instance(Jobs)
         result, code = await jobs.create(homework.title)
@@ -172,8 +172,8 @@ async def delete_homework_job():
             logger.warning(f"Homwork not found for {homework_id=} and {admin_id=}")
             return jsonify({"error": "Homework not found"}), 404
 
-        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
-        is_deleted = folder_manager.delete(homework.title)
+        tests = Tests(current_app.config["CONFIG"].backend.sharepoint_path)
+        is_deleted = tests.delete(homework.title, is_all=True)
 
         if not is_deleted:
             logger.warning("Failed to delete homework test folder")
@@ -232,8 +232,8 @@ async def update_homework_job():
 
         new_name = data.get("new_name", homework.title)
 
-        folder_manager = FolderManager(current_app.config["CONFIG"].backend.sharepoint_path)
-        is_renamed = folder_manager.rename(old_name=homework.title, new_name=new_name)
+        fs_manager = FSManager(current_app.config["CONFIG"].backend.sharepoint_path)
+        is_renamed = fs_manager.rename(old_name=homework.title, new_name=new_name)
 
         if not is_renamed:
             logger.warning("Failed to rename homework test folder")
@@ -287,3 +287,48 @@ async def trigger_homework_job():
     except Exception as e:
         logger.exception("Unexpected error while deleting Jenkins job")
         return jsonify({"error": str(e)}), 500
+
+
+@jenkins_bp.route("/add-test", methods=["POST"])
+async def add_test():
+    try:
+        test_id = int(request.args.get("id", 0))
+        homework_id = int(request.args.get("homework_id"), 0)
+
+        if not test_id or not homework_id:
+            logger.warning("Missing homework_id or test_id in request args")
+            return jsonify({"error": "Missing homework_id or test_id"}), 400
+
+        test = await g.db_gateway.test.get_single(
+            test_id=test_id, homework_id=homework_id
+        )
+
+        if not test:
+            logger.warning(f"Test not found for homework {homework_id}")
+            return jsonify({"error": "Test not found"}), 400
+
+        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+
+        tests = Tests(base_path)
+        result = tests.add(test.name, test.file_content)
+        if not result:
+            logger.warning(f"Failed to create test file: {test_name}")
+            return jsonify({"error": f"Failed to create test file: {test_name}"}), 400
+        return jsonify({"success": "Test was successfully added"}), 200
+    except ValueError:
+        logger.exception("Invalid input types for test_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while add Jenkins test")
+        return jsonify({"error": str(e)}), 500
+
+
+
+@jenkins_bp.route("/delete-test", methods=["POST"])
+async def delete_test():
+    pass
+
+
+@jenkins_bp.route("/delete-test", methods=["POST"])
+async def update_test_status():
+    pass

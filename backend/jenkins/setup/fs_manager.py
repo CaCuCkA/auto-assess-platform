@@ -1,39 +1,55 @@
-from pathlib import Path
 import hashlib
 import shutil
-import re
+from pathlib import Path
 
 
-class FolderManager:
+class FSManager:
     def __init__(self, base_path: str):
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
-
 
     @staticmethod
     def _safe_name(name: str) -> str:
         title_hash = hashlib.sha256(name.encode()).hexdigest()[:12]
         return f"job-{title_hash}"
 
-
-    def create(self, name: str) -> Path:
+    def create_folder(self, name: str) -> Path:
         folder_path = self.base_path / self._safe_name(name)
         folder_path.mkdir(parents=True, exist_ok=True)
         return folder_path
 
-
-    def delete(self, name: str) -> bool:
+    def delete_folder(self, name: str) -> bool:
         folder_path = self.base_path / self._safe_name(name)
         if folder_path.exists() and folder_path.is_dir():
             shutil.rmtree(folder_path)
             return True
         return False
 
-
-    def rename(self, old_name: str, new_name: str) -> bool:
+    def rename_folder(self, old_name: str, new_name: str) -> bool:
         old_path = self.base_path / self._safe_name(old_name)
         new_path = self.base_path / self._safe_name(new_name)
         if old_path.exists() and old_path.is_dir():
             old_path.rename(new_path)
             return True
         return False
+
+    def create_file(self, name: str, content: str = "") -> Path:
+        file_path = self.base_path / f"{name}.py"
+        file_path.write_text(content)
+        return file_path
+
+    def delete_file(self, name: str) -> bool:
+        file_path = self.base_path / f"{name}.py"
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()
+            return True
+        return False
+
+    def rename_file(self, old_name: str, new_name: str) -> bool:
+        old_path = self.base_path / f"{old_name}.py"
+        new_path = self.base_path / f"{new_name}.py"
+        if old_path.exists() and old_path.is_file():
+            old_path.rename(new_path)
+            return True
+        return False
+        
