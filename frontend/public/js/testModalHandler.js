@@ -197,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!cardContainer) return;
     
             currentTestId = cardContainer.getAttribute("test-id");
+            console.log(currentTestId);
     
             const response = await fetch(`/test/${currentTestId}`, {
                 method: "GET",

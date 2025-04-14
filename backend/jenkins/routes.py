@@ -1,4 +1,4 @@
-from .setup import Credentials, Jobs, FSManager
+from .setup import Credentials, Jobs, Tests, FSManager
 from utils import get_logger
 
 from typing import Type, TypeVar
@@ -323,12 +323,72 @@ async def add_test():
         return jsonify({"error": str(e)}), 500
 
 
-
 @jenkins_bp.route("/delete-test", methods=["POST"])
 async def delete_test():
-    pass
+    try:
+        test_id = int(request.args.get("id", 0))
+        homework_id = int(request.args.get("homework_id"), 0)
+
+        if not test_id or not homework_id:
+            logger.warning("Missing homework_id or test_id in request args")
+            return jsonify({"error": "Missing homework_id or test_id"}), 400
+
+        test = await g.db_gateway.test.get_single(
+            test_id=test_id, homework_id=homework_id
+        )
+
+        if not test:
+            logger.warning(f"Test not found for homework {homework_id}")
+            return jsonify({"error": "Test not found"}), 400
+
+        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+
+        tests = Tests(base_path)
+        result = tests.delete(test.name)
+        if not result:
+            logger.warning(f"Failed to delete test file: {test_name}")
+            return jsonify({"error": f"Failed to delete test file: {test_name}"}), 400
+        return jsonify({"success": "Test was successfully deleted"}), 200
+    except ValueError:
+        logger.exception("Invalid input types for test_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while deleting Jenkins test")
+        return jsonify({"error": str(e)}), 500
 
 
-@jenkins_bp.route("/delete-test", methods=["POST"])
+@jenkins_bp.route("/update-test", methods=["POST"])
 async def update_test_status():
-    pass
+    try:
+        test_id = int(request.args.get("id", 0))
+        homework_id = int(request.args.get("homework_id"), 0)
+
+        if not test_id or not homework_id:
+            logger.warning("Missing homework_id or test_id in request args")
+            return jsonify({"error": "Missing homework_id or test_id"}), 400
+
+        test = await g.db_gateway.test.get_single(
+            test_id=test_id, homework_id=homework_id
+        )
+
+        data = await request.get_json()
+        new_name = data.get("new_name", "")
+
+        if not test:
+            logger.warning(f"Test not found for homework {homework_id}")
+            return jsonify({"error": "Test not found"}), 400
+
+        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+
+        tests = Tests(base_path)
+        result = tests.update(test.name, new_name, test.is_active)
+        if not result:
+            logger.warning(f"Failed to delete test file: {test_name}")
+            return jsonify({"error": f"Failed to delete test file: {test_name}"}), 400
+        return jsonify({"success": "Test was successfully deleted"}), 200
+    except ValueError:
+        logger.exception("Invalid input types for test_id or homework_id")
+        return jsonify({"error": "Invalid input type"}), 400
+    except Exception as e:
+        logger.exception("Unexpected error while deleting Jenkins test")
+        return jsonify({"error": str(e)}), 500

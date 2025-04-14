@@ -7,15 +7,15 @@ class Tests:
     def __init__(self, sharepoint_path: str):
         self.__fs_manager = FSManager(sharepoint_path)
 
-   def __is_correct_format(self, name):
+    def __is_correct_format(self, name: str):
         return fnmatch.fnmatch(name, "test*.py")
 
-    def  __unify_format(self, name):
-        if __is_correct_format(name):
+    def  __unify_format(self, name: str):
+        if self.__is_correct_format(name):
             return name
         return "test_" + name
 
-   def add(self, name: str, content: str = "", is_folder: bool = False):
+    def add(self, name: str, content: str = "", is_folder: bool = False):
         if is_folder:
             path = self.__fs_manager.create_folder(name)
             return bool(path)
@@ -24,7 +24,7 @@ class Tests:
         path = self.__fs_manager.create_file(name, content)
         return bool(path)
 
-    def delete(self, name, is_all=False):
+    def delete(self, name: str, is_all: bool = False):
         if is_all:
             result = self.__fs_manager.delete_folder(name)
             return result
@@ -33,7 +33,12 @@ class Tests:
         result = self.__fs_manager.delete_file(name)
         return result
     
-    def update(self, name):
+    def update(self, name: str, new_name: str = "", is_active: bool = False):
         name = self.__unify_format(name)
-        result = self.__fs_manager.rename_file(name, "disable_" + name)
-        return result
+        prefix = "disable_"
+
+        old_name = f"{prefix}{name}" if not is_active else name
+        target_name = new_name or name
+        new_name = f"{prefix}{target_name}" if not is_active else target_name
+
+        return self.__fs_manager.rename_file(old_name, new_name)

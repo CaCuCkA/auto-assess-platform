@@ -34,20 +34,20 @@ class FSManager:
         return False
 
     def create_file(self, name: str, content: str = "") -> Path:
-        file_path = self.base_path / f"{name}.py"
+        file_path = self.base_path / f"{name}"
         file_path.write_text(content)
         return file_path
 
     def delete_file(self, name: str) -> bool:
-        file_path = self.base_path / f"{name}.py"
+        file_path = self.base_path / f"{name}"
         if file_path.exists() and file_path.is_file():
             file_path.unlink()
             return True
         return False
 
     def rename_file(self, old_name: str, new_name: str) -> bool:
-        old_path = self.base_path / f"{old_name}.py"
-        new_path = self.base_path / f"{new_name}.py"
+        old_path = self.base_path / f"{old_name}"
+        new_path = self.base_path / f"{new_name}"
         if old_path.exists() and old_path.is_file():
             old_path.rename(new_path)
             return True
