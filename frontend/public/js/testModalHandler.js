@@ -80,15 +80,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 
                 const data = await response.json();
-    
+                console.log(`TEST ID: ${data.test_id}`)
                 if (data.success) {
                     const fileItem = document.createElement("div");
                     fileItem.classList.add("test-file-item");
-                    fileItem.innerHTML = `<span class="test-file-icon"><i class="fas fa-file-code" test_id="${data.test_id}"></i></span>
+                    fileItem.setAttribute("test-id", data.test_id);
+
+                    fileItem.innerHTML = `
+                        <span class="test-file-icon"><i class="fas fa-file-code"></i></span>
                         <span class="test-file-name">${file.name}</span>
                         <span class="test-file-status excluded" test-file-status="excluded">Excluded</span>
-                        <span class="test-file-preferences"><i class="fas fa-ellipsis-v"></i></span>`;
-                        fileList.prepend(fileItem);
+                        <span class="test-file-preferences"><i class="fas fa-ellipsis-v"></i></span>
+                    `;
+                    fileList.prepend(fileItem);
                 } else {
                     displayNotification("error", "Failed to add test!", "There was an issue while attempting to add the test. Please try again later.")
                     console.error(`Failed to add test: ${file.name}`, response.status, response.statusText);

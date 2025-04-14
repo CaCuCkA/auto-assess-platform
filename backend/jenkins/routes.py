@@ -269,11 +269,13 @@ async def trigger_homework_job():
                                             homework_id=homework_id)
 
         port = current_app.config["CONFIG"].backend.port
+        base_path = current_app.config["CONFIG"].backend.sharepoint_path
 
         params = {
             "GITHUB_URL":data.get("url"),
             "GITHUB_SHA_COMMIT":data.get("commit_sha"),
             "CREDENTIALS":credential_id,
+            "TEST_PATH": base_path,
             "SUCCESS_ENDPOINT": f"http://localhost:{port}/github/success?id={participant_id}&homework_id={homework_id}", 
             "FAILED_ENDPOINT": f"http://localhost:{port}/github/failed?id={participant_id}&homework_id={homework_id}"
         }
@@ -307,9 +309,14 @@ async def add_test():
             logger.warning(f"Test not found for homework {homework_id}")
             return jsonify({"error": "Test not found"}), 400
 
-        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+        base_path = current_app.config["CONFIG"].backend.sharepoint_path
 
-        tests = Tests(base_path)
+        homework = await g.db_gateway.homework.get_single(homework_id=homework_id)
+        if not homework:
+            logger.warning(f"Howework not found by id: {homework_id}")
+            return jsonify({"error": "Homework not found"}), 400
+
+        tests = Tests(base_path, homework.title)
         result = tests.add(test.name, test.file_content)
         if not result:
             logger.warning(f"Failed to create test file: {test_name}")
@@ -336,18 +343,22 @@ async def delete_test():
         test = await g.db_gateway.test.get_single(
             test_id=test_id, homework_id=homework_id
         )
-
         if not test:
             logger.warning(f"Test not found for homework {homework_id}")
             return jsonify({"error": "Test not found"}), 400
 
-        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+        homework = await g.db_gateway.homework.get_single(homework_id=homework_id)
+        if not homework:
+            logger.warning(f"Howework not found by id: {homework_id}")
+            return jsonify({"error": "Homework not found"}), 400
 
-        tests = Tests(base_path)
-        result = tests.delete(test.name)
+        base_path = current_app.config["CONFIG"].backend.sharepoint_path
+
+        tests = Tests(base_path, homework.title)
+        result = tests.delete(test.name, is_active=test.is_active)
         if not result:
-            logger.warning(f"Failed to delete test file: {test_name}")
-            return jsonify({"error": f"Failed to delete test file: {test_name}"}), 400
+            logger.warning(f"Failed to delete test file: {test.name}")
+            return jsonify({"error": f"Failed to delete test file: {test.name}"}), 400
         return jsonify({"success": "Test was successfully deleted"}), 200
     except ValueError:
         logger.exception("Invalid input types for test_id or homework_id")
@@ -372,23 +383,28 @@ async def update_test_status():
         )
 
         data = await request.get_json()
-        new_name = data.get("new_name", "")
+        new_name = data.get("new_name", "") if data else ""
 
         if not test:
             logger.warning(f"Test not found for homework {homework_id}")
             return jsonify({"error": "Test not found"}), 400
 
-        base_path = port = current_app.config["CONFIG"].backend.sharepoint_path
+        homework = await g.db_gateway.homework.get_single(homework_id=homework_id)
+        if not homework:
+            logger.warning(f"Howework not found by id: {homework_id}")
+            return jsonify({"error": "Homework not found"}), 400
 
-        tests = Tests(base_path)
+        base_path = current_app.config["CONFIG"].backend.sharepoint_path
+
+        tests = Tests(base_path, homework.title)
         result = tests.update(test.name, new_name, test.is_active)
         if not result:
-            logger.warning(f"Failed to delete test file: {test_name}")
-            return jsonify({"error": f"Failed to delete test file: {test_name}"}), 400
-        return jsonify({"success": "Test was successfully deleted"}), 200
+            logger.warning(f"Failed to update test file: from {test.name} to {new_name}")
+            return jsonify({"error": f"Failed to update test file: {test.name}"}), 400
+        return jsonify({"success": "Test was successfully updated"}), 200
     except ValueError:
         logger.exception("Invalid input types for test_id or homework_id")
         return jsonify({"error": "Invalid input type"}), 400
     except Exception as e:
-        logger.exception("Unexpected error while deleting Jenkins test")
+        logger.exception("Unexpected error while updating Jenkins test")
         return jsonify({"error": str(e)}), 500

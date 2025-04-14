@@ -60,15 +60,6 @@ exports.editTest = async (req, res) => {
         const testId = req.params.id;
         const name = req.body.name;
         const homeworkId = req.session.homeworkId;
-        const test = await Test.update({
-            "testId": testId,
-            "homeworkId": homeworkId,
-            "name": name
-        });
-        
-        if (!test) {
-            return res.status(500).json({ success: false, error: "Internal Server Error" });
-        } 
 
         const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
         const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-test`, { new_name: name }, {
@@ -82,6 +73,16 @@ exports.editTest = async (req, res) => {
             console.warn("External API call failed:", externalRes.status);
             return res.status(502).json({ success: false, error: 'external_service_failed' });
         }
+
+        const test = await Test.update({
+            "testId": testId,
+            "homeworkId": homeworkId,
+            "name": name
+        });
+        
+        if (!test) {
+            return res.status(500).json({ success: false, error: "Internal Server Error" });
+        } 
         
         res.status(201).json({ success: true });
     

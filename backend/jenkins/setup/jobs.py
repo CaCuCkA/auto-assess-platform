@@ -99,6 +99,7 @@ class Jobs(Base):
     async def trigger(self, name: str, **params)  -> Tuple[str, int]:
         try:
             hashed_name = Jobs.__safe_job_name(name)
+            params["TEST_PATH"] = params["TEST_PATH"] + f"/{hashed_name}"
             async with aiojenkins.Jenkins(host=self._url, user=self._user, password=self._token) as jenkins:
                 await jenkins.builds.start(hashed_name, **params) 
                 return "Job triggered successfully", 200

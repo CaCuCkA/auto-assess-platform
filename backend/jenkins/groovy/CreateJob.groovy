@@ -18,6 +18,7 @@ def params = [
     new StringParameterDefinition("GITHUB_URL", "https://github.com/example/repo", "GitHub repository URL"),
     new StringParameterDefinition("GITHUB_SHA_COMMIT", "main", "GitHub branch or commit SHA"),
     new StringParameterDefinition("CREDENTIALS", "credentials-id", "Jenkins credentials ID"),
+    new StringParameterDefinition("TEST_PATH", "test_path", "Job path to tests"),
     new StringParameterDefinition("SUCCESS_ENDPOINT", "success-url", "URL to notify in case of successful pipeline execution."),
     new StringParameterDefinition("FAILED_ENDPOINT", "failed-url", "URL to notify in case of pipeline failure.")
 ]
@@ -70,7 +71,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testResults = sh(script: 'bash -c "source /home/Mykola/venv/bin/activate && python -m unittest discover -s /home/Mykola/test"', returnStdout: true).trim()
+                    def testResults = sh(script: 'bash -c "python -m unittest discover -s \$TEST_PATH"', returnStdout: true).trim()
                     sh "echo \${testResults}"
                     if (testResults.contains('FAIL')) {
                         def message = "Tests failed: \${testResults}"
