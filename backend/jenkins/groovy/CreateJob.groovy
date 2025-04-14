@@ -71,7 +71,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testResults = sh(script: 'bash -c "python -m unittest discover -s \$TEST_PATH"', returnStdout: true).trim()
+                    def testResults = sh(script: 'bash -c "python3 -m unittest discover -s \$TEST_PATH"', returnStdout: true).trim()
                     sh "echo \${testResults}"
                     if (testResults.contains('FAIL')) {
                         def message = "Tests failed: \${testResults}"

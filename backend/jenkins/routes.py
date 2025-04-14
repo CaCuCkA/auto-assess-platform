@@ -269,6 +269,7 @@ async def trigger_homework_job():
                                             homework_id=homework_id)
 
         port = current_app.config["CONFIG"].backend.port
+        host = current_app.config["CONFIG"].backend.host
         base_path = current_app.config["CONFIG"].backend.sharepoint_path
 
         params = {
@@ -276,8 +277,8 @@ async def trigger_homework_job():
             "GITHUB_SHA_COMMIT":data.get("commit_sha"),
             "CREDENTIALS":credential_id,
             "TEST_PATH": base_path,
-            "SUCCESS_ENDPOINT": f"http://localhost:{port}/github/success?id={participant_id}&homework_id={homework_id}", 
-            "FAILED_ENDPOINT": f"http://localhost:{port}/github/failed?id={participant_id}&homework_id={homework_id}"
+            "SUCCESS_ENDPOINT": f"http://{host}:{port}/github/success?id={participant_id}&homework_id={homework_id}", 
+            "FAILED_ENDPOINT": f"http://{host}:{port}/github/failed?id={participant_id}&homework_id={homework_id}"
         }
         
         jobs = get_jenkins_instance(Jobs)

@@ -109,22 +109,23 @@ exports.editHomeworkParticipant = async (req, res) => {
         }
 
         const setClause = updateValues.join(", ");
-
-        const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
                 
-        const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-credential`, 
-            payload,
-            {
-                params: {
-                    id,
-                    homework_id: homeworkId
+        if (Object.keys(payload).length !== 0) {
+            const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
+            const externalRes = await axios.post(`${externalApiUrl}/jenkins/update-credential`, 
+                payload,
+                {
+                    params: {
+                        id,
+                        homework_id: homeworkId
+                    }
                 }
-            }
-        );
+            );
 
-        if (externalRes.status !== 200) {
-            console.warn("External API call failed:", externalRes.status);
-            return res.status(502).json({ success: false, error: 'external_service_failed' });
+            if (externalRes.status !== 200) {
+                console.warn("External API call failed:", externalRes.status);
+                return res.status(502).json({ success: false, error: 'external_service_failed' });
+            }
         }
 
         const updatedHomework = await HomeworkParticipant.update(setClause, id, homeworkId);

@@ -7,6 +7,11 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip && \
     apt-get clean
 
+# Install Docker
+RUN curl -SL https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose && \
+    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
 # Install Jenkins plugins
 RUN jenkins-plugin-cli --version
 COPY jenkins/plugins.txt /usr/share/jenkins/ref/plugins.txt
