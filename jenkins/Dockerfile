@@ -4,8 +4,17 @@ USER root
 
 # Install Python
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
+    apt-get install -y python3 python3-pip python3-venv && \
     apt-get clean
+
+# Install Python requirements
+COPY jenkins/requirements.txt /tmp/requirements.txt
+RUN python3 -m venv /venv && \
+. /venv/bin/activate && \
+pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Потім явно використовуй Python з цього venv:
+ENV PATH="/venv/bin:$PATH"
 
 # Install Docker
 RUN curl -SL https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose && \

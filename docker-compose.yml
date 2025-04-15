@@ -34,7 +34,8 @@ services:
       - .env
     depends_on:
       - postgres
-    networks:
+      - jenkins
+    networks: 
       - app_network
     volumes:
       - sharepoint:${BACKEND_SHAREPOINT_PATH} 
@@ -67,12 +68,11 @@ services:
       JENKINS_PASSWORD: ${JENKINS_PASSWORD}
       BACKEND_HOST: ${BACKEND_HOST}
       BACKEND_PORT: ${BACKEND_PORT}
+      JENKINS_SHAREPOINT_PATH: ${JENKINS_SHAREPOINT_PATH}
     user: root
     volumes:
       - sharepoint:${JENKINS_SHAREPOINT_PATH}
       - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - backend
     networks:
       - app_network
     restart: on-failure

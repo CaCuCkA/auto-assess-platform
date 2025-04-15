@@ -1,26 +1,45 @@
-from quart import Blueprint, request, g, current_app, jsonify
-
+import os
+import time
+from quart import current_app
 from .logging import get_logger
 
 
 logger = get_logger(__name__)
 
-jenkins_token_bp = Blueprint("jenkins_token", __name__)
 
-@jenkins_token_bp.route("/add", methods=["POST"])
-async def webhook_handler():
-    data = await request.get_json()
-    if not data:
-        logger.error("Missing JSON body in request")
-        return jsonify({"error": "Missing JSON body"}), 400
-    
-    token = data.get("token")
-    if not token:
-        logger.error("Missing Jenkins API token in request")
-        return jsonify({"error": "Missing Jenkins API token in request"}), 400
-
+def get_token_from_file(file_name: str = "token.txt", wait_timeout: int = 60):
     config = current_app.config["CONFIG"]
-    config.update_jenkins_token(token)
-    logger.info(f"TOKEN: {config.jenkins.token}")
-    return jsonify({"success": "Successfully get API token"}), 200
+    basepath = config.backend.sharepoint_path
+    file_path = f"{basepath}/{file_name}"
 
+    start_time = time.time()
+
+    while True:
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            break
+
+        if time.time() - start_time > wait_timeout:
+            logger.error(f"Timeout: Token file '{file_path}' not found or still empty after {wait_timeout} seconds.")
+            raise TimeoutError(f"Timed out waiting for token file '{file_path}'")
+
+        logger.info(f"Waiting for token file '{file_path}'...")
+        time.sleep(2)
+
+    try:
+        with open(file_path, mode="r") as file:
+            token = file.read().strip()
+
+        if not token:
+            logger.error(f"Token file '{file_path}' is empty.")
+            raise ValueError("Jenkins token file is empty")
+
+        config.update_jenkins_token(token)
+        logger.info(f"✅ Jenkins token loaded from '{file_path}'")
+
+    except PermissionError:
+        logger.error(f"No permission to read token file '{file_path}'")
+        raise PermissionError(f"No permission to read token file '{file_path}'")
+
+    except Exception as e:
+        logger.exception(f"Unexpected error reading Jenkins token file: {e}")
+        raise RuntimeError(f"Failed to load Jenkins token: {e}")

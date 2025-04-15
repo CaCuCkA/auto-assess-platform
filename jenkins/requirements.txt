@@ -1,0 +1,35 @@
+# ==== Core testing frameworks ====
+pytest                    # Popular testing framework for Python
+pytest-cov                # Plugin to measure test coverage with pytest
+unittest-xml-reporting    # Generate JUnit-compatible XML reports for unittest
+
+# ==== Mocking and patching ====
+mock                      # Standard mocking library for unit tests
+requests-mock             # Mock out HTTP requests made via `requests`
+pytest-mock               # Pytest plugin for using `unittest.mock` more easily
+
+# ==== HTTP / REST API testing ====
+requests                  # Popular HTTP client for testing REST APIs
+httpx                     # Modern async-capable HTTP client (sync + async)
+aiohttp                   # Async HTTP client/server framework
+pytest-asyncio            # Enables testing of async code using pytest
+
+# ==== Coverage and code metrics ====
+coverage                  # Core library for measuring code coverage
+
+# ==== Logging ====
+loguru                    # Elegant and powerful logging library
+
+# ==== Web framework testing support ====
+pytest-flask              # Tools for testing Flask applications
+
+# ==== Database testing ====
+pytest-postgresql         # Pytest fixtures for PostgreSQL database tests
+pytest-mysql              # Pytest fixtures for MySQL database tests
+
+# ==== CLI and dev tools ====
+click                     # Build and test command-line interfaces
+
+# ==== Code quality and static analysis ====
+flake8                    # Python style and lint checker
+mypy                      # Static type checker for Python

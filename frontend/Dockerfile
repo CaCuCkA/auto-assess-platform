@@ -8,7 +8,7 @@ RUN npm install
 
 COPY .env .env
 
-EXPOSE 3000
+EXPOSE ${FRONTEND_PORT}
 
 CMD ["npm", "start"]
 

@@ -12,6 +12,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY .env .env
 
-EXPOSE 5000
+EXPOSE ${BACKEND_PORT}
 
 CMD ["python3", "main.py"]

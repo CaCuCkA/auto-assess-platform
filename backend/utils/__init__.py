@@ -1,8 +1,8 @@
 from .logging import setup_logging, get_logger
-from .get_token import jenkins_token_bp
+from .get_token import get_token_from_file
 
 __all__ = [
     "get_logger",
     "setup_logging",
-    "jenkins_token_bp",
+    "get_token_from_file",
 ]
