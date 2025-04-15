@@ -15,8 +15,26 @@ class FSManager:
 
     def create_folder(self, name: str) -> Path:
         folder_path = self.__base_path / self._safe_name(name)
-        folder_path.mkdir(parents=True, exist_ok=True)
-        return folder_path
+
+        try:
+            folder_path.mkdir(parents=True, exist_ok=True)
+
+            init_file = folder_path / '__init__.py'
+            init_file.touch(exist_ok=True)
+
+            if not any(folder_path.glob("test_*.py")):
+                placeholder = folder_path / "test_placeholder.py"
+                placeholder.write_text(
+                    "import unittest\n\n"
+                    "class PlaceholderTest(unittest.TestCase):\n"
+                    "    def test_placeholder(self):\n"
+                    "        self.assertTrue(True)\n"
+                )
+            return folder_path
+
+        except Exception as e:
+            self.__logger.error(f"Failed to create folder '{folder_path}': {e}")
+            raise RuntimeError(f"Unable to create folder '{folder_path}'") from e
 
     def delete_folder(self, name: str) -> bool:
         folder_path = self.__base_path / self._safe_name(name)

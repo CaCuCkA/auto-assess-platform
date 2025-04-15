@@ -270,7 +270,7 @@ async def trigger_homework_job():
 
         port = current_app.config["CONFIG"].backend.port
         host = current_app.config["CONFIG"].backend.host
-        base_path = current_app.config["CONFIG"].backend.sharepoint_path
+        base_path = current_app.config["CONFIG"].jenkins.sharepoint_path
 
         params = {
             "GITHUB_URL":data.get("url"),
