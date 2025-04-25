@@ -46,39 +46,57 @@ exports.addHomeworkParticipant = async (req, res) => {
     try {
         const { participants } = req.body;
         const { homeworkId } = req.session;
-                
-        if (!participants) return res.status(400).json({ error: "Missing required field" });
-        if (!homeworkId) return res.status(403).json({ error: "Unauthorized or missing homework ID" });
 
-        const newHomeworkParticipant = await HomeworkParticipant.add(participants, homeworkId);
+        if (!participants || !Array.isArray(participants) || participants.length === 0) {
+            return res.status(400).json({ error: "Missing or invalid 'participants' field" });
+        }
 
-        if (!newHomeworkParticipant || !newHomeworkParticipant.participant_id) {
-            return res.status(502).json({ success: false, error: 'Failed to add homework' });
+        if (!homeworkId) {
+            return res.status(403).json({ error: "Unauthorized or missing homework ID" });
+        }
+
+        const newHomeworkParticipants = await HomeworkParticipant.add(participants, homeworkId);
+
+        if (!newHomeworkParticipants || !Array.isArray(newHomeworkParticipants)) {
+            return res.status(502).json({ success: false, error: 'Failed to add homework participants' });
         }
 
         const externalApiUrl = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
-                
-        const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-credential`, null, {
-            params: {
-                id: newHomeworkParticipant.participant_id,
-                homework_id: homeworkId
-            }
-        });
+        const addedParticipants = [];
 
-        if (externalRes.status !== 200) {
-            await HomeworkParticipant.delete(newHomeworkParticipant.participant_id, homeworkId);
-            console.warn("External API call failed:", externalRes.status);
-            return res.status(502).json({ success: false, error: 'external_service_failed' });
+        for (const participant of newHomeworkParticipants) {
+            try {
+                const externalRes = await axios.post(`${externalApiUrl}/jenkins/add-credential`, null, {
+                    params: {
+                        id: participant.participant_id,
+                        homework_id: homeworkId
+                    }
+                });
+
+                if (externalRes.status === 200) {
+                    addedParticipants.push(participant);
+                } else {
+                    await HomeworkParticipant.delete(participant.participant_id, homeworkId);
+                    console.warn(`External API failed for participant ${participant.participant_id}:`, externalRes.status);
+                }
+            } catch (externalError) {
+                await HomeworkParticipant.delete(participant.participant_id, homeworkId);
+                console.error(`External service error for participant ${participant.participant_id}:`, externalError);
+            }
+        }
+
+        if (addedParticipants.length === 0) {
+            return res.status(502).json({ success: false, error: 'All external service calls failed' });
         }
 
         return res.status(201).json({
             success: true,
-            message: "Homework participant added successfully",
-            data: newHomeworkParticipant
+            message: "Participants added successfully",
+            data: addedParticipants
         });
+
     } catch (error) {
-        await HomeworkParticipant.delete(newHomeworkParticipant.participant_id, homeworkId);
-        console.error("Error adding homework participant:", error);
+        console.error("Unexpected error while adding participants:", error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };

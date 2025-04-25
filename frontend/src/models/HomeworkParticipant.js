@@ -21,7 +21,7 @@ class HomeworkParticipant {
             ).join(", ") + " RETURNING *";
         
         const { rows } = await pool.query(query);
-        return rows[0];
+        return rows;
     }    
 
     static async update(values, participanId, homeworkId) {
