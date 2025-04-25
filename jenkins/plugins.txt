@@ -1,12 +1,13 @@
 workflow-aggregator
-git                            
-github                         
+git
+github
 github-branch-source
 credentials-binding
 ssh-slaves
 matrix-auth
 pam-auth
-mailer      
+mailer
 timestamper
 cloudbees-folder
 antisamy-markup-formatter
+http_request

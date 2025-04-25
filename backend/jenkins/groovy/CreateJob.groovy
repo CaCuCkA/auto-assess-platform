@@ -46,8 +46,16 @@ pipeline {
                         sh "git checkout \$GITHUB_SHA_COMMIT"
                     } catch (Exception e) {
                         def message = "Git checkout failed: \${e.getMessage()}"
-                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
-                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
+
+                        httpRequest(
+                            httpMode: 'POST',
+                            contentType: 'APPLICATION_JSON',
+                            url: "\${FAILED_ENDPOINT}",
+                            requestBody: groovy.json.JsonOutput.toJson([
+                                status: "failure",
+                                message: message
+                            ])
+                        )
                         error message
                     }
                 }
@@ -60,8 +68,17 @@ pipeline {
                     def buildResult = sh(script: 'docker-compose up --build -d', returnStatus: true)
                     if (buildResult != 0) {
                         def message = "Docker build failed with status: \${buildResult}"
-                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
-                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
+
+                        httpRequest(
+                            httpMode: 'POST',
+                            contentType: 'APPLICATION_JSON',
+                            url: "\${FAILED_ENDPOINT}",
+                            requestBody: groovy.json.JsonOutput.toJson([
+                                status: "failure",
+                                message: message
+                            ])
+                        )
+                        
                         error "Docker build failed"
                     }
                 }
@@ -71,13 +88,27 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testResults = sh(script: 'bash -c "python3 -m unittest discover -s \$TEST_PATH"', returnStdout: true).trim()
-                    sh "echo \${testResults}"
-                    if (testResults.contains('FAIL')) {
-                        def message = "Tests failed: \${testResults}"
-                        def jsonBody = "{\\"status\\": \\"failure\\", \\"message\\": \\"\${message}\\"}"
-                        sh "curl -X POST '\$FAILED_ENDPOINT' -H 'Content-Type: application/json' -d '\${jsonBody}'"
-                        error message
+                    def testResults = sh(script: 'bash -c "python3 -m unittest discover -s \$TEST_PATH 2>&1 || true"', returnStdout: true).trim()
+
+                    if (testResults.contains('FAIL') || 
+                        testResults.contains('ERROR') || 
+                        testResults.contains('ImportError') || 
+                        testResults.contains('No module named') || 
+                        testResults.contains('No such file')) {
+                        
+                        def message = "Tests failed or error occurred: \${testResults}"
+                        
+                        httpRequest(
+                            httpMode: 'POST',
+                            contentType: 'APPLICATION_JSON',
+                            url: "\${FAILED_ENDPOINT}",
+                            requestBody: groovy.json.JsonOutput.toJson([
+                                status: "failure",
+                                message: message
+                            ])
+                        )
+                        
+                        error(message)
                     }
                 }
             }
@@ -86,7 +117,10 @@ pipeline {
 
     post {
         always {
-            sh 'docker-compose down'
+            sh '''
+                docker-compose down --volumes --remove-orphans
+                docker image prune -af
+            '''
         }
 
         success {
