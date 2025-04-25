@@ -8,8 +8,26 @@ logger = get_logger(__name__)
 
 github_bp = Blueprint("github", __name__)
 
+
 @github_bp.route("/webhook", methods=["POST"])
 async def webhook_handler():
+    event_type = request.headers.get("X-GitHub-Event")
+    payload = await request.get_json()
+
+    if event_type == "ping":
+        logger.info(f"Received GitHub ping: {payload}")
+        return jsonify({"msg": "pong", "zen": payload.get("zen", "")}), 200
+
+    if event_type == "pull_request":
+        action = payload.get("action")
+        if action not in ["opened", "reopened", "synchronize"]:
+            logger.info(f"Ignoring pull request action: {action}")
+            return jsonify({"msg": f"Skipped pull request with action: {action}"}), 200
+
+    if event_type != "pull_request":
+        logger.info(f"Ignoring unsupported event type: {event_type}")
+        return jsonify({"msg": f"Ignored event: {event_type}"}), 200
+
     event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])    
     result, code = await event_handler.webhook_event(request)
     return jsonify(result), code
