@@ -142,8 +142,8 @@ async def create_homework_job():
 
         tests = Tests(current_app.config["CONFIG"].backend.sharepoint_path)
         tests.add(homework.title, is_folder=True)
-
         jobs = get_jenkins_instance(Jobs)
+        # await jobs.create_lock()
         result, code = await jobs.create(homework.title)
 
         return jsonify({"result": result}), code
@@ -409,3 +409,5 @@ async def update_test_status():
     except Exception as e:
         logger.exception("Unexpected error while updating Jenkins test")
         return jsonify({"error": str(e)}), 500
+
+

@@ -14,6 +14,12 @@ class Gemini:
         return f"""
             Your task is to review the following code changes. Please follow these guidelines:
             {self.format_guidelines()}
+            You must:
+                - Analyze the code critically and professionally.
+                - Identify any issues related to code quality, correctness, readability, maintainability, performance, and best practices.
+                - Provide constructive feedback with specific suggestions for improvement where necessary.
+                - Detect potential bugs, security vulnerabilities, or logical errors if present.
+                - Highlight positive aspects of the changes where applicable.
             Context Information:
             File: {file_path}
             PR Title: {pr_details.pr_title}

@@ -14,6 +14,7 @@ logger = get_logger(__name__)
 
 class Jobs(Base):
     __SCRIPT_PATH = "jenkins/groovy/CreateJob.groovy"
+    __LOCK_SCRIPT_PATH = "jenkins/groovy/01-create-docker-lock.groovy"
 
     
     def __init__(self, url, user, token):
@@ -54,7 +55,32 @@ class Jobs(Base):
         except Exception as e:
             logger.error(f"Unexpected error during job creation: {e}")
             return f"Unexpected error during job creation: {e}", 500
-        
+    
+    async def create_lock(self):
+        async with aiofiles.open(self.__LOCK_SCRIPT_PATH, mode="r") as f:
+            content = await f.read()
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url=f"{self._url}/scriptText",
+                    auth=aiohttp.BasicAuth(login=self._user, password=self._token),
+                    data={"script": content},
+                ) as response:
+                    if response.status == 200:
+                        result = await response.text()
+                        logger.info(f"Lock creation result: {result}")
+                        return "Lock created successfully", 200
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"Failed to execute lock script: {response.status} {error_text}")
+                        return f"Failed to execute lock script: {error_text}", response.status
+        except aiohttp.ClientError as e:
+            logger.error(f"HTTP client error while creating lock: {e}")
+            return f"HTTP client error while creating lock: {e}", 502
+        except Exception as e:
+            logger.error(f"Unexpected error during lock creation: {e}")
+            return f"Unexpected error during lock creation: {e}", 500
 
     async def delete(self, name: str) -> Tuple[str, int]:
         try:

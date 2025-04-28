@@ -46,7 +46,6 @@ pipeline {
                         sh "git checkout \$GITHUB_SHA_COMMIT"
                     } catch (Exception e) {
                         def message = "Git checkout failed: \${e.getMessage()}"
-
                         httpRequest(
                             httpMode: 'POST',
                             contentType: 'APPLICATION_JSON',
@@ -62,53 +61,53 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build, Test and Cleanup') {
             steps {
-                script {
-                    def buildResult = sh(script: 'docker-compose up --build -d', returnStatus: true)
-                    if (buildResult != 0) {
-                        def message = "Docker build failed with status: \${buildResult}"
+                lock('docker-build-lock') {  // Lock from build to container destroy
+                    script {
+                        try {
+                            // Docker up
+                            def buildResult = sh(script: 'docker-compose up --build -d', returnStatus: true)
+                            if (buildResult != 0) {
+                                def message = "Docker build failed with status: \${buildResult}"
+                                httpRequest(
+                                    httpMode: 'POST',
+                                    contentType: 'APPLICATION_JSON',
+                                    url: "\${FAILED_ENDPOINT}",
+                                    requestBody: groovy.json.JsonOutput.toJson([
+                                        status: "failure",
+                                        message: message
+                                    ])
+                                )
+                                error "Docker build failed"
+                            }
 
-                        httpRequest(
-                            httpMode: 'POST',
-                            contentType: 'APPLICATION_JSON',
-                            url: "\${FAILED_ENDPOINT}",
-                            requestBody: groovy.json.JsonOutput.toJson([
-                                status: "failure",
-                                message: message
-                            ])
-                        )
-                        
-                        error "Docker build failed"
-                    }
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                script {
-                    def testResults = sh(script: 'bash -c "python3 -m unittest discover -s \$TEST_PATH 2>&1 || true"', returnStdout: true).trim()
-
-                    if (testResults.contains('FAIL') || 
-                        testResults.contains('ERROR') || 
-                        testResults.contains('ImportError') || 
-                        testResults.contains('No module named') || 
-                        testResults.contains('No such file')) {
-                        
-                        def message = "Tests failed or error occurred: \${testResults}"
-                        
-                        httpRequest(
-                            httpMode: 'POST',
-                            contentType: 'APPLICATION_JSON',
-                            url: "\${FAILED_ENDPOINT}",
-                            requestBody: groovy.json.JsonOutput.toJson([
-                                status: "failure",
-                                message: message
-                            ])
-                        )
-                        
-                        error(message)
+                            // Run tests
+                            def testResults = sh(script: 'bash -c "python3 -m unittest discover -s \$TEST_PATH 2>&1 || true"', returnStdout: true).trim()
+                            if (testResults.contains('FAIL') || 
+                                testResults.contains('ERROR') || 
+                                testResults.contains('ImportError') || 
+                                testResults.contains('No module named') || 
+                                testResults.contains('No such file')) {
+                                def message = "Tests failed or error occurred: \${testResults}"
+                                httpRequest(
+                                    httpMode: 'POST',
+                                    contentType: 'APPLICATION_JSON',
+                                    url: "\${FAILED_ENDPOINT}",
+                                    requestBody: groovy.json.JsonOutput.toJson([
+                                        status: "failure",
+                                        message: message
+                                    ])
+                                )
+                                error(message)
+                            }
+                        } finally {
+                            // Always destroy containers
+                            sh '''
+                                docker-compose down --volumes --remove-orphans
+                                docker image prune -af
+                            '''
+                        }
                     }
                 }
             }
@@ -116,20 +115,11 @@ pipeline {
     }
 
     post {
-        always {
-            sh '''
-                docker-compose down --volumes --remove-orphans
-                docker image prune -af
-            '''
-        }
-
         success {
             sh "curl -X POST '\$SUCCESS_ENDPOINT'"
         }
     }
-
 }
-
 """
 
 def flowDef = new CpsFlowDefinition(pipelineScript, true)

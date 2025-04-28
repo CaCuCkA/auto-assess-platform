@@ -25,6 +25,7 @@ class CodeReviewer:
             file_path = file_data["path"]
             comments.extend(await self.__process_file_hunks(file_path, file_data, pr_details))
         
+        logger.info(f"Comments {comments}")
         return comments
         
     
@@ -78,7 +79,6 @@ class CodeReviewer:
                 removed_lines = [line.value.rstrip('\n') for line in hunk if line.is_removed]
 
                 full_hunk = [f"{line.line_type}{line.value.rstrip()}" for line in hunk]
-
                 return {
                     "comment": response["reviewComment"],
                     "added": added_lines,
@@ -87,7 +87,7 @@ class CodeReviewer:
                     "path": file_path.strip(),
                     "line": line_number,
                 }
-        except (KeyError, TypeError, ValueError):
+        except (KeyError, TypeError, ValueError) as error:
+            logger.error(f"Catch an error: {error}")
             pass
         return None
-

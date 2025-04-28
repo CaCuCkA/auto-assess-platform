@@ -16,9 +16,12 @@ async def webhook_handler():
 
     if event_type == "ping":
         logger.info(f"Received GitHub ping: {payload}")
-        return jsonify({"msg": "pong", "zen": payload.get("zen", "")}), 200
+        zen = payload.get("zen", "") if payload else ""
+        return jsonify({"msg": "pong", "zen": zen}), 200
 
     if event_type == "pull_request":
+        if payload is None:
+            return jsonify({"error": "Missing payload"}), 400
         action = payload.get("action")
         if action not in ["opened", "reopened", "synchronize"]:
             logger.info(f"Ignoring pull request action: {action}")
@@ -28,7 +31,7 @@ async def webhook_handler():
         logger.info(f"Ignoring unsupported event type: {event_type}")
         return jsonify({"msg": f"Ignored event: {event_type}"}), 200
 
-    event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])    
+    event_handler = EventHandler(db_gateway=g.db_gateway, config=current_app.config["CONFIG"])
     result, code = await event_handler.webhook_event(request)
     return jsonify(result), code
 
