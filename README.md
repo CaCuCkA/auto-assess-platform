@@ -34,7 +34,7 @@ auto-assess-platform/
 ├── jenkins/             # Jenkinsfiles and job configuration templates
 ├── database/            # PostgreSQL schema and initialization scripts
 ├── docker-compose.yml   # Docker Compose setup for all services
-└── .env.example     
+└── dotenv     
 ```
 
 ## Usage Overview
