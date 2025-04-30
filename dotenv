@@ -1,29 +1,28 @@
 # 🔗 Database Configuration
-POSTGRES_USER="postgres_user"
-POSTGRES_PASSWORD="postgres_password"
-POSTGRES_DB="postgres_db"
-DB_HOST="db_host"
-DB_PORT=5432
+POSTGRES_USER="postgres_user"                 # Username for PostgreSQL
+POSTGRES_PASSWORD="postgres_password"         # Password for PostgreSQL
+POSTGRES_DB="postgres_db"                     # Name of the main PostgreSQL database
+DB_HOST="db_host"                             # Hostname or Docker service name for the database (e.g., "db")
+DB_PORT=5432                                  # PostgreSQL port (default: 5432)
 
 # ⚙️ Jenkins Integration
-JENKINS_HOST="jenkins_host"
-JENKINS_PORT=8080
-JENKINS_AGENT_PORT=50000
-JENKINS_USER="jenkins_user"
-JENKINS_PASSWORD="jenkins_password"
-JENKINS_API_TOKEN="jenkins_api_token"
-JENKINS_SHAREPOINT_PATH="/var/jenkins_home/sharepoint/tests"
+JENKINS_HOST="jenkins_host"                   # Jenkins service IP 
+JENKINS_PORT=8080                             # Port for accessing Jenkins UI
+JENKINS_AGENT_PORT=50000                      # Port used by Jenkins agents
+JENKINS_USER="jenkins_user"                   # Jenkins username
+JENKINS_PASSWORD="jenkins_password"           # Jenkins password
+JENKINS_API_TOKEN="jenkins_api_token"         # API token for Jenkins user
+JENKINS_SHAREPOINT_PATH="/var/jenkins_home/sharepoint/tests"  # Path in Jenkins container to store test results
 
 # 🤖 Gemini API
-GEMINI_API_TOKEN="gemini_token"
-GEMINI_MODEL="gemini_api_modal"
+GEMINI_API_TOKEN="gemini_token"               # API token for accessing Gemini (LLM)
+GEMINI_MODEL="gemini_api_modal"               # Gemini model to use (e.g., "gemini-pro")
 
 # 🌐 Frontend
-SESSION_SECRET="frontend_session_secret"
-FRONTEND_HOST="frontend_host"
-FRONTEND_PORT=3000
+SESSION_SECRET="frontend_session_secret"      # Secret key for securing user sessions
+FRONTEND_HOST="frontend_host"                 # Frontend IP
+FRONTEND_PORT=3000                            # Port for serving the frontend
 
 # 🛠️ Backend
-BACKEND_HOST="backend_host"
-BACKEND_PORT=5000
-BACKEND_SHAREPOINT_PATH="/backend/sharepoint/tests"
+BACKEND_HOST="backend_host"                   # Backend IP
+BACKEND_SHAREPOINT_PATH="/backend/sharepoint/tests"  # Path in backend container for saving test files
